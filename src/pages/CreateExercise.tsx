@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { Exercise, ExerciseType, MuscleGroup } from '../types';
+import { ScreenHeader } from '../components/ui/ScreenHeader';
+import { Dropdown } from '../components/ui/Dropdown';
 import './CreateExercise.css';
 
 const MUSCLE_GROUP_LABELS: Record<string, string> = {
@@ -14,30 +16,16 @@ const MUSCLE_GROUP_LABELS: Record<string, string> = {
 
 const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'arms', 'glutes', 'core'];
 
+const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((mg) => ({
+  value: mg,
+  label: MUSCLE_GROUP_LABELS[mg],
+}));
+
 const TYPE_PARAMS: Record<ExerciseType, string[]> = {
   strength: ['вес', 'подходы', 'повторения'],
   cardio: ['время', 'дистанция'],
   stretching: ['время', 'подходы'],
 };
-
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M13 4l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ up }: { up?: boolean }) {
-  return (
-    <svg
-      className={`create__dropdown-chevron${up ? ' create__dropdown-chevron--up' : ''}`}
-      viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
-    >
-      <path d="M7 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 interface Props {
   onBack: () => void;
@@ -49,7 +37,6 @@ export default function CreateExercise({ onBack, onSave, initialExercise }: Prop
   const [name, setName] = useState(initialExercise?.name ?? '');
   const [type, setType] = useState<ExerciseType | null>(initialExercise?.exerciseType ?? null);
   const [muscleGroup, setMuscleGroup] = useState<MuscleGroup | null>(initialExercise?.muscleGroup ?? null);
-  const [muscleDropdownOpen, setMuscleDropdownOpen] = useState(false);
   const [selectedParams, setSelectedParams] = useState<string[]>(
     initialExercise ? TYPE_PARAMS[initialExercise.exerciseType] : []
   );
@@ -81,13 +68,7 @@ export default function CreateExercise({ onBack, onSave, initialExercise }: Prop
   return (
     <div className="create">
       <div className="create__content">
-        {/* Header */}
-        <div className="create__header">
-          <button className="create__back" onClick={onBack} aria-label="Назад">
-            <BackIcon />
-          </button>
-          <h1 className="create__title">{initialExercise ? 'Изменить' : 'Создать'}</h1>
-        </div>
+        <ScreenHeader title={initialExercise ? 'Изменить' : 'Создать'} onBack={onBack} />
 
         {/* Name */}
         <div className="create__field">
@@ -128,32 +109,12 @@ export default function CreateExercise({ onBack, onSave, initialExercise }: Prop
         {type === 'strength' && (
           <div className="create__field">
             <span className="create__label">Группа мышц</span>
-            <div className="create__dropdown-wrap">
-              <button
-                className="create__dropdown-trigger"
-                onClick={() => setMuscleDropdownOpen((o) => !o)}
-              >
-                <span>{muscleGroup ? MUSCLE_GROUP_LABELS[muscleGroup] : 'Выберите группу'}</span>
-                <ChevronIcon up={muscleDropdownOpen} />
-              </button>
-              {muscleDropdownOpen && (
-                <ul className="create__dropdown-list">
-                  {MUSCLE_GROUPS.map((mg) => (
-                    <li key={mg}>
-                      <button
-                        className="create__dropdown-item"
-                        onClick={() => {
-                          setMuscleGroup(mg);
-                          setMuscleDropdownOpen(false);
-                        }}
-                      >
-                        {MUSCLE_GROUP_LABELS[mg]}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <Dropdown
+              value={muscleGroup}
+              options={MUSCLE_GROUP_OPTIONS}
+              placeholder="Выберите группу"
+              onChange={(mg) => setMuscleGroup(mg)}
+            />
           </div>
         )}
 

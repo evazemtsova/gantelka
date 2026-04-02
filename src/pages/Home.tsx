@@ -1,3 +1,4 @@
+import { ListItem } from '../components/ui/ListItem';
 import './Home.css';
 
 /* Логотип Гантельки — три уровня пластин + знак = в центре */
@@ -20,14 +21,6 @@ function PlayIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path d="M6 4l10 6-10 6V4z" fill="#d8ff3b"/>
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M7 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -69,15 +62,11 @@ export default function Home({ onOpenExercises, onOpenWorkouts }: Props) {
         <p className="home__history-title">история</p>
         <ul className="home__history-list">
           {HISTORY_STUB.map((item) => (
-            <li key={item.id} className="home__history-item">
-              <div className="home__history-info">
-                <span className="home__history-name">{item.name}</span>
-                <span className="home__history-meta">
-                  {item.date} • {item.count} упражнений
-                </span>
-              </div>
-              <ArrowIcon />
-            </li>
+            <ListItem
+              key={item.id}
+              name={item.name}
+              meta={`${item.date} • ${item.count} упражнений`}
+            />
           ))}
         </ul>
       </div>

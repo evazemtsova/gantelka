@@ -1,10 +1,21 @@
 :root {
+  /* Colours */
   --accent: #d8ff3b;
   --bg: #fbf9f8;
   --text: #000;
   --text-muted: #c6c6c6;
   --border: #000;
+
+  /* Typography */
+  --font-mono: 'Anonymous Pro', monospace;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+
+  /* Sizing */
   --nav-height: 65px;
+  --input-height: 50px;
+  --screen-padding: 36px 24px 24px;
+
+  /* Effects */
   --shadow: 4px 4px 2px 0px rgba(0, 0, 0, 0.25);
 }
 

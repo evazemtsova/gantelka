@@ -1,0 +1,37 @@
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--text-muted);
+  cursor: pointer;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.list-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-item__name {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 27.5px;
+  color: var(--text);
+}
+
+.list-item__meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text);
+}

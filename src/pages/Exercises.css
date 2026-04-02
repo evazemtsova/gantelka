@@ -5,33 +5,8 @@
   gap: 30px;
 }
 
-/* Header */
-.exercises__header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.exercises__back-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 25px;
-  height: 25px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.exercises__back-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
 .exercises__title {
-  font-family: 'Anonymous Pro', monospace;
+  font-family: var(--font-mono);
   font-size: 40px;
   font-weight: 400;
   line-height: 48px;
@@ -52,7 +27,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px;
-  height: 50px;
+  height: var(--input-height);
   background: #fff;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -68,7 +43,7 @@
 }
 
 .exercises__search-placeholder {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
@@ -77,7 +52,7 @@
 
 .exercises__btn {
   width: 54px;
-  height: 50px;
+  height: var(--input-height);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -103,7 +78,7 @@
 
 /* List section */
 .exercises__section-title {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
@@ -118,58 +93,9 @@
   list-style: none;
 }
 
-.exercise-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 25px;
-  border-bottom: 1px solid var(--text-muted);
-  cursor: pointer;
-}
-
-.exercise-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.exercise-item__info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.exercise-item__name {
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 27.5px;
-  color: var(--text);
-}
-
-.exercise-item__meta {
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.exercise-item__meta--custom {
-  color: var(--text);
-}
-
-.exercise-item__arrow {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  color: var(--text);
-}
-
 /* ─── Filters panel ─── */
 .filters {
-  padding: 36px 24px 24px;
+  padding: var(--screen-padding);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -183,39 +109,6 @@
   gap: 30px;
 }
 
-.filters__header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.filters__back {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 25px;
-  height: 25px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.filters__back svg {
-  width: 20px;
-  height: 20px;
-}
-
-.filters__title {
-  font-family: 'Anonymous Pro', monospace;
-  font-size: 40px;
-  font-weight: 400;
-  line-height: 48px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
 .filters__field {
   display: flex;
   flex-direction: column;
@@ -223,85 +116,13 @@
 }
 
 .filters__label {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--text);
-}
-
-.filters__dropdown-wrap {
-  position: relative;
-}
-
-.filters__dropdown-trigger {
-  width: 100%;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 20px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.filters__chevron {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  transform: rotate(90deg);
-  transition: transform 0.15s;
-}
-
-.filters__chevron--up {
-  transform: rotate(270deg);
-}
-
-.filters__dropdown-list {
-  list-style: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-top: none;
-  box-shadow: var(--shadow);
-  z-index: 10;
-}
-
-.filters__dropdown-item {
-  display: block;
-  width: 100%;
-  height: 49px;
-  padding: 10px;
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--text-muted);
-  cursor: pointer;
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 20px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text);
-  text-align: left;
-}
-
-.filters__dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.filters__dropdown-item:hover {
-  background: #f5f5f5;
 }
 
 /* Checkbox row */
@@ -337,7 +158,7 @@
 }
 
 .filters__checkbox-label {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
@@ -354,14 +175,14 @@
 
 .filters__btn-show,
 .filters__btn-reset {
-  height: 50px;
+  height: var(--input-height);
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   cursor: pointer;
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
@@ -380,44 +201,11 @@
 
 /* ─── Search screen ─── */
 .search-screen {
-  padding: 36px 24px 24px;
+  padding: var(--screen-padding);
   display: flex;
   flex-direction: column;
   gap: 25px;
   min-height: 100%;
-}
-
-.search-screen__header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.search-screen__back {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 25px;
-  height: 25px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.search-screen__back svg {
-  width: 20px;
-  height: 20px;
-}
-
-.search-screen__title {
-  font-family: 'Anonymous Pro', monospace;
-  font-size: 40px;
-  font-weight: 400;
-  line-height: 48px;
-  text-transform: uppercase;
-  color: var(--text);
 }
 
 .search-screen__input-wrap {
@@ -425,7 +213,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px;
-  height: 50px;
+  height: var(--input-height);
   background: #fff;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -437,7 +225,7 @@
   border: none;
   outline: none;
   background: transparent;
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
@@ -474,7 +262,7 @@
 }
 
 .search-screen__count {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   line-height: 20px;
@@ -491,7 +279,7 @@
 
 /* ─── Exercise detail ─── */
 .exercise-detail {
-  padding: 36px 24px 24px;
+  padding: var(--screen-padding);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -502,39 +290,6 @@
   display: flex;
   flex-direction: column;
   gap: 25px;
-}
-
-.exercise-detail__header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.exercise-detail__back {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 25px;
-  height: 25px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.exercise-detail__back svg {
-  width: 20px;
-  height: 20px;
-}
-
-.exercise-detail__title {
-  font-family: 'Anonymous Pro', monospace;
-  font-size: 40px;
-  font-weight: 400;
-  line-height: 48px;
-  text-transform: uppercase;
-  color: var(--text);
 }
 
 .exercise-detail__fields {
@@ -550,7 +305,7 @@
 }
 
 .exercise-detail__label {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
@@ -564,7 +319,7 @@
 }
 
 .exercise-detail__value {
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   line-height: 20px;
@@ -582,7 +337,7 @@
 
 .exercise-detail__btn-add {
   flex: 1;
-  height: 50px;
+  height: var(--input-height);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -591,7 +346,7 @@
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   cursor: pointer;
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-size: 20px;
   font-weight: 500;
   text-transform: uppercase;
@@ -606,7 +361,7 @@
 
 .exercise-detail__btn-edit {
   width: 50px;
-  height: 50px;
+  height: var(--input-height);
   flex-shrink: 0;
   display: flex;
   align-items: center;

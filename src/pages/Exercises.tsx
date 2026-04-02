@@ -1,6 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import type { Exercise, MuscleGroup } from '../types';
 import CreateExercise from './CreateExercise';
+import { ScreenHeader } from '../components/ui/ScreenHeader';
+import { ListItem } from '../components/ui/ListItem';
+import { Dropdown } from '../components/ui/Dropdown';
+import {
+  SearchIcon,
+  FilterIcon,
+  PlusIcon,
+  CloseIcon,
+  EditIcon,
+  AddToWorkoutIcon,
+} from '../components/ui/icons';
 import './Exercises.css';
 
 const MUSCLE_GROUP_LABELS: Record<string, string> = {
@@ -15,6 +26,11 @@ const MUSCLE_GROUP_LABELS: Record<string, string> = {
 };
 
 const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'arms', 'glutes', 'core'];
+
+const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((mg) => ({
+  value: mg,
+  label: MUSCLE_GROUP_LABELS[mg],
+}));
 
 const EXERCISE_TYPE_LABELS: Record<string, string> = {
   strength: 'силовое',
@@ -43,82 +59,7 @@ const SAMPLE_EXERCISES: Exercise[] = [
 
 const hasCustomExercises = SAMPLE_EXERCISES.some((e) => e.isCustom);
 
-function SearchIcon() {
-  return (
-    <svg className="exercises__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="11" cy="11" r="7" />
-      <path d="M16.5 16.5L21 21" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <path d="M2 5h16M5 10h10M8 15h4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M10 4v12M4 10h12" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg className="exercise-item__arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M7 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ up }: { up?: boolean }) {
-  return (
-    <svg
-      className={`filters__chevron${up ? ' filters__chevron--up' : ''}`}
-      viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"
-    >
-      <path d="M7 4l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M13 4l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <path d="M13.5 3.5l3 3L5 18H2v-3L13.5 3.5z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function AddToWorkoutIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <path d="M3 5h10M3 10h7M3 15h5" strokeLinecap="round" />
-      <path d="M15 11v6M12 14h6" strokeLinecap="round" />
-    </svg>
-  );
-}
+// ─── Search Screen ────────────────────────────────────────────────────────────
 
 interface SearchScreenProps {
   exercises: Exercise[];
@@ -130,9 +71,7 @@ function SearchScreen({ exercises, onBack, onSelectExercise }: SearchScreenProps
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const results = query.trim()
     ? exercises.filter((ex) => ex.name.toLowerCase().includes(query.toLowerCase()))
@@ -140,12 +79,7 @@ function SearchScreen({ exercises, onBack, onSelectExercise }: SearchScreenProps
 
   return (
     <div className="search-screen">
-      <div className="search-screen__header">
-        <button className="search-screen__back" onClick={onBack} aria-label="Назад">
-          <BackIcon />
-        </button>
-        <h1 className="search-screen__title">Найти</h1>
-      </div>
+      <ScreenHeader title="Найти" onBack={onBack} />
 
       <div className="search-screen__input-wrap">
         <SearchIcon />
@@ -171,17 +105,14 @@ function SearchScreen({ exercises, onBack, onSelectExercise }: SearchScreenProps
             {results.map((ex) => {
               const typeLabel = EXERCISE_TYPE_LABELS[ex.exerciseType];
               const muscleLabel = MUSCLE_GROUP_LABELS[ex.muscleGroup];
+              const meta = `${typeLabel}•${muscleLabel}${ex.isCustom ? ' • создано мной' : ''}`;
               return (
-                <li key={ex.id} className="exercise-item" onClick={() => onSelectExercise(ex)}>
-                  <div className="exercise-item__info">
-                    <span className="exercise-item__name">{ex.name}</span>
-                    <span className="exercise-item__meta">
-                      {typeLabel}•{muscleLabel}
-                      {ex.isCustom && ' • создано мной'}
-                    </span>
-                  </div>
-                  <ArrowIcon />
-                </li>
+                <ListItem
+                  key={ex.id}
+                  name={ex.name}
+                  meta={meta}
+                  onClick={() => onSelectExercise(ex)}
+                />
               );
             })}
           </ul>
@@ -190,6 +121,8 @@ function SearchScreen({ exercises, onBack, onSelectExercise }: SearchScreenProps
     </div>
   );
 }
+
+// ─── Exercise Detail ──────────────────────────────────────────────────────────
 
 interface ExerciseDetailProps {
   exercise: Exercise;
@@ -205,12 +138,7 @@ function ExerciseDetail({ exercise, onBack, onEdit }: ExerciseDetailProps) {
   return (
     <div className="exercise-detail">
       <div className="exercise-detail__content">
-        <div className="exercise-detail__header">
-          <button className="exercise-detail__back" onClick={onBack} aria-label="Назад">
-            <BackIcon />
-          </button>
-          <h1 className="exercise-detail__title">{exercise.name}</h1>
-        </div>
+        <ScreenHeader title={exercise.name} onBack={onBack} />
 
         <div className="exercise-detail__fields">
           <div className="exercise-detail__field">
@@ -255,6 +183,8 @@ function ExerciseDetail({ exercise, onBack, onEdit }: ExerciseDetailProps) {
   );
 }
 
+// ─── Filters Panel ────────────────────────────────────────────────────────────
+
 interface FiltersProps {
   muscleGroup: MuscleGroup | null;
   onlyCustom: boolean;
@@ -265,51 +195,22 @@ interface FiltersProps {
 function FiltersPanel({ muscleGroup, onlyCustom, onApply, onBack }: FiltersProps) {
   const [pendingGroup, setPendingGroup] = useState<MuscleGroup | null>(muscleGroup);
   const [pendingCustom, setPendingCustom] = useState(onlyCustom);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <div className="filters">
       <div className="filters__content">
-        {/* Title */}
-        <div className="filters__header">
-          <button className="filters__back" onClick={onBack} aria-label="Назад">
-            <BackIcon />
-          </button>
-          <h1 className="filters__title">Фильтры</h1>
-        </div>
+        <ScreenHeader title="Фильтры" onBack={onBack} />
 
-        {/* Muscle group */}
         <div className="filters__field">
           <span className="filters__label">Группа мышц</span>
-          <div className="filters__dropdown-wrap">
-            <button
-              className="filters__dropdown-trigger"
-              onClick={() => setDropdownOpen((o) => !o)}
-            >
-              <span>{pendingGroup ? MUSCLE_GROUP_LABELS[pendingGroup] : 'Выберите группу'}</span>
-              <ChevronIcon up={dropdownOpen} />
-            </button>
-            {dropdownOpen && (
-              <ul className="filters__dropdown-list">
-                {MUSCLE_GROUPS.map((mg) => (
-                  <li key={mg}>
-                    <button
-                      className="filters__dropdown-item"
-                      onClick={() => {
-                        setPendingGroup(mg);
-                        setDropdownOpen(false);
-                      }}
-                    >
-                      {MUSCLE_GROUP_LABELS[mg]}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <Dropdown
+            value={pendingGroup}
+            options={MUSCLE_GROUP_OPTIONS}
+            placeholder="Выберите группу"
+            onChange={(mg) => setPendingGroup(mg)}
+          />
         </div>
 
-        {/* Only custom */}
         {hasCustomExercises && (
           <label className="filters__checkbox-row">
             <span className={`filters__checkbox${pendingCustom ? ' filters__checkbox--checked' : ''}`}>
@@ -329,21 +230,13 @@ function FiltersPanel({ muscleGroup, onlyCustom, onApply, onBack }: FiltersProps
         )}
       </div>
 
-      {/* Actions */}
       <div className="filters__actions">
-        <button
-          className="filters__btn-show"
-          onClick={() => onApply(pendingGroup, pendingCustom)}
-        >
+        <button className="filters__btn-show" onClick={() => onApply(pendingGroup, pendingCustom)}>
           Показать
         </button>
         <button
           className="filters__btn-reset"
-          onClick={() => {
-            setPendingGroup(null);
-            setPendingCustom(false);
-            onApply(null, false);
-          }}
+          onClick={() => { setPendingGroup(null); setPendingCustom(false); onApply(null, false); }}
         >
           Сбросить
         </button>
@@ -351,6 +244,8 @@ function FiltersPanel({ muscleGroup, onlyCustom, onApply, onBack }: FiltersProps
     </div>
   );
 }
+
+// ─── Exercises (main) ─────────────────────────────────────────────────────────
 
 interface ExercisesProps {
   onShowSubPage: () => void;
@@ -382,9 +277,7 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
         onBack={() => setEditingExercise(null)}
         onSave={(updated) => {
           const updatedWithId = { ...updated, id: editingExercise.id };
-          setExercises((prev) =>
-            prev.map((ex) => (ex.id === editingExercise.id ? updatedWithId : ex))
-          );
+          setExercises((prev) => prev.map((ex) => (ex.id === editingExercise.id ? updatedWithId : ex)));
           setSelectedExercise(updatedWithId);
           setEditingExercise(null);
         }}
@@ -398,7 +291,6 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
         exercise={selectedExercise}
         onBack={() => {
           setSelectedExercise(null);
-          // If we came from search, stay in sub-page; if from main list, show nav
           if (!showSearch) onHideSubPage();
         }}
         onEdit={() => setEditingExercise(selectedExercise)}
@@ -410,10 +302,7 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
     return (
       <SearchScreen
         exercises={exercises}
-        onBack={() => {
-          setShowSearch(false);
-          onHideSubPage();
-        }}
+        onBack={() => { setShowSearch(false); onHideSubPage(); }}
         onSelectExercise={(ex) => setSelectedExercise(ex)}
       />
     );
@@ -422,10 +311,7 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
   if (showCreate) {
     return (
       <CreateExercise
-        onBack={() => {
-          setShowCreate(false);
-          onHideSubPage();
-        }}
+        onBack={() => { setShowCreate(false); onHideSubPage(); }}
         onSave={(ex) => {
           setExercises((prev) => [{ ...ex, id: String(Date.now()) }, ...prev]);
           setShowCreate(false);
@@ -440,10 +326,7 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
       <FiltersPanel
         muscleGroup={muscleGroupFilter}
         onlyCustom={onlyCustomFilter}
-        onBack={() => {
-          setShowFilters(false);
-          onHideSubPage();
-        }}
+        onBack={() => { setShowFilters(false); onHideSubPage(); }}
         onApply={(mg, custom) => {
           setMuscleGroupFilter(mg);
           setOnlyCustomFilter(custom);
@@ -461,32 +344,23 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
       <div className="exercises__toolbar">
         <button
           className="exercises__search"
-          onClick={() => {
-            setShowSearch(true);
-            onShowSubPage();
-          }}
+          onClick={() => { setShowSearch(true); onShowSubPage(); }}
           aria-label="Поиск упражнений"
         >
-          <SearchIcon />
+          <SearchIcon className="exercises__search-icon" />
           <span className="exercises__search-placeholder">поиск</span>
         </button>
         <button
           className={`exercises__btn${hasActiveFilters ? ' exercises__btn--active-filter' : ''}`}
           aria-label="Фильтры"
-          onClick={() => {
-            setShowFilters(true);
-            onShowSubPage();
-          }}
+          onClick={() => { setShowFilters(true); onShowSubPage(); }}
         >
           <FilterIcon />
         </button>
         <button
           className="exercises__btn exercises__btn--add"
           aria-label="Добавить упражнение"
-          onClick={() => {
-            setShowCreate(true);
-            onShowSubPage();
-          }}
+          onClick={() => { setShowCreate(true); onShowSubPage(); }}
         >
           <PlusIcon />
         </button>
@@ -505,24 +379,13 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
             const meta = ex.isCustom
               ? `${typeLabel}•${muscleLabel} • создано мной`
               : `${typeLabel}•${muscleLabel}`;
-
             return (
-              <li
+              <ListItem
                 key={ex.id}
-                className="exercise-item"
-                onClick={() => {
-                  setSelectedExercise(ex);
-                  onShowSubPage();
-                }}
-              >
-                <div className="exercise-item__info">
-                  <span className="exercise-item__name">{ex.name}</span>
-                  <span className={`exercise-item__meta${ex.isCustom ? ' exercise-item__meta--custom' : ''}`}>
-                    {meta}
-                  </span>
-                </div>
-                <ArrowIcon />
-              </li>
+                name={ex.name}
+                meta={meta}
+                onClick={() => { setSelectedExercise(ex); onShowSubPage(); }}
+              />
             );
           })}
         </ul>
