@@ -1,0 +1,84 @@
+:root {
+  --accent: #d8ff3b;
+  --bg: #fbf9f8;
+  --text: #000;
+  --text-muted: #c6c6c6;
+  --border: #000;
+  --nav-height: 65px;
+  --shadow: 4px 4px 2px 0px rgba(0, 0, 0, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Manrope', system-ui, sans-serif;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.bottom-nav {
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: var(--bg);
+  flex-shrink: 0;
+  padding: 0 24px;
+}
+
+.nav-item {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 6px;
+  transition: color 0.15s;
+}
+
+.nav-item.active {
+  color: #abd600;
+  font-weight: 800;
+}
+
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+.stub-page {
+  padding: 36px 24px;
+  font-family: 'Anonymous Pro', monospace;
+  font-size: 40px;
+  text-transform: uppercase;
+}
