@@ -71,3 +71,27 @@ export function AddToWorkoutIcon() {
     </svg>
   );
 }
+
+export function DragHandleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+      <circle cx="5.5" cy="3.5" r="1.5" />
+      <circle cx="12.5" cy="3.5" r="1.5" />
+      <circle cx="5.5" cy="9" r="1.5" />
+      <circle cx="12.5" cy="9" r="1.5" />
+      <circle cx="5.5" cy="14.5" r="1.5" />
+      <circle cx="12.5" cy="14.5" r="1.5" />
+    </svg>
+  );
+}
+
+export function TrashIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7">
+      <path d="M3 5h14" strokeLinecap="round" />
+      <path d="M8 5V3.5h4V5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 5l1 11.5h8L15 5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8.5 9v5M11.5 9v5" strokeLinecap="round" />
+    </svg>
+  );
+}

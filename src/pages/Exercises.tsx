@@ -4,6 +4,8 @@ import CreateExercise from './CreateExercise';
 import { ScreenHeader } from '../components/ui/ScreenHeader';
 import { ListItem } from '../components/ui/ListItem';
 import { Dropdown } from '../components/ui/Dropdown';
+import { Button } from '../components/ui/Button';
+import { CheckboxRow } from '../components/ui/CheckboxRow';
 import {
   SearchIcon,
   FilterIcon,
@@ -13,6 +15,22 @@ import {
   AddToWorkoutIcon,
 } from '../components/ui/icons';
 import './Exercises.css';
+
+// ─── Workout options (mock) ───────────────────────────────────────────────────
+
+interface WorkoutOption {
+  id: string;
+  name: string;
+  date: string;
+  exerciseCount: number;
+}
+
+const MOCK_WORKOUTS: WorkoutOption[] = [
+  { id: 'w1', name: 'День ног ягодицы', date: '24 марта', exerciseCount: 5 },
+  { id: 'w2', name: 'День рук',         date: 'нет даты', exerciseCount: 0 },
+  { id: 'w3', name: 'День ног квадры',  date: 'нет даты', exerciseCount: 5 },
+  { id: 'w4', name: 'День спины',       date: 'нет даты', exerciseCount: 0 },
+];
 
 const MUSCLE_GROUP_LABELS: Record<string, string> = {
   chest: 'Грудь',
@@ -58,6 +76,83 @@ const SAMPLE_EXERCISES: Exercise[] = [
 ];
 
 const hasCustomExercises = SAMPLE_EXERCISES.some((e) => e.isCustom);
+
+// ─── Add to workout screen ────────────────────────────────────────────────────
+
+interface AddToWorkoutScreenProps {
+  workouts: WorkoutOption[];
+  onBack: () => void;
+  onBackToList: () => void;
+}
+
+function AddToWorkoutScreen({ workouts, onBack, onBackToList }: AddToWorkoutScreenProps) {
+  const [view, setView] = useState<'select' | 'no-workouts' | 'added'>(
+    workouts.length > 0 ? 'select' : 'no-workouts'
+  );
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  function toggle(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  if (view === 'no-workouts') {
+    return (
+      <div className="add-to-workout">
+        <ScreenHeader title="" onBack={onBack} />
+        <div className="add-to-workout__center">
+          <p className="add-to-workout__promo">нет тренировок</p>
+          <p className="add-to-workout__desc">
+            у вас пока не создано ни одной тренировки, можете создать новую и добавить туда упражнение
+          </p>
+        </div>
+        <Button variant="filled" fullWidth onClick={onBack}>
+          создать тренировку
+        </Button>
+      </div>
+    );
+  }
+
+  if (view === 'added') {
+    return (
+      <div className="add-to-workout">
+        <ScreenHeader title="" onBack={onBack} />
+        <div className="add-to-workout__center">
+          <p className="add-to-workout__promo">добавлено</p>
+          <p className="add-to-workout__desc">упражнение добавлено в тренировку</p>
+        </div>
+        <Button variant="outlined" fullWidth onClick={onBackToList}>
+          вернуться в упражнения
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="add-to-workout">
+      <div className="add-to-workout__top">
+        <ScreenHeader title="добавить в" onBack={onBack} />
+        <ul className="add-to-workout__list">
+          {workouts.map(w => (
+            <CheckboxRow
+              key={w.id}
+              name={w.name}
+              meta={`${w.date} • ${w.exerciseCount} упражнений`}
+              checked={selected.has(w.id)}
+              onClick={() => toggle(w.id)}
+            />
+          ))}
+        </ul>
+      </div>
+      <Button variant="filled" fullWidth onClick={() => setView('added')}>
+        сохранить изменения
+      </Button>
+    </div>
+  );
+}
 
 // ─── Search Screen ────────────────────────────────────────────────────────────
 
@@ -128,9 +223,10 @@ interface ExerciseDetailProps {
   exercise: Exercise;
   onBack: () => void;
   onEdit: () => void;
+  onAddToWorkout: () => void;
 }
 
-function ExerciseDetail({ exercise, onBack, onEdit }: ExerciseDetailProps) {
+function ExerciseDetail({ exercise, onBack, onEdit, onAddToWorkout }: ExerciseDetailProps) {
   const typeLabel = EXERCISE_TYPE_LABELS[exercise.exerciseType];
   const muscleLabel = MUSCLE_GROUP_LABELS[exercise.muscleGroup];
   const paramsLabel = EXERCISE_PARAMS_LABELS[exercise.exerciseType];
@@ -171,13 +267,10 @@ function ExerciseDetail({ exercise, onBack, onEdit }: ExerciseDetailProps) {
       </div>
 
       <div className="exercise-detail__actions">
-        <button className="exercise-detail__btn-add">
-          <AddToWorkoutIcon />
+        <Button variant="filled" flex icon={<AddToWorkoutIcon />} onClick={onAddToWorkout}>
           добавить в тренировку
-        </button>
-        <button className="exercise-detail__btn-edit" aria-label="Редактировать" onClick={onEdit}>
-          <EditIcon />
-        </button>
+        </Button>
+        <Button iconOnly onClick={onEdit}><EditIcon /></Button>
       </div>
     </div>
   );
@@ -231,15 +324,16 @@ function FiltersPanel({ muscleGroup, onlyCustom, onApply, onBack }: FiltersProps
       </div>
 
       <div className="filters__actions">
-        <button className="filters__btn-show" onClick={() => onApply(pendingGroup, pendingCustom)}>
+        <Button variant="filled" flex onClick={() => onApply(pendingGroup, pendingCustom)}>
           Показать
-        </button>
-        <button
-          className="filters__btn-reset"
+        </Button>
+        <Button
+          variant="outlined"
+          flex
           onClick={() => { setPendingGroup(null); setPendingCustom(false); onApply(null, false); }}
         >
           Сбросить
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -258,6 +352,7 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
   const [showSearch, setShowSearch] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+  const [showAddToWorkout, setShowAddToWorkout] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>(SAMPLE_EXERCISES);
   const [muscleGroupFilter, setMuscleGroupFilter] = useState<MuscleGroup | null>(null);
   const [onlyCustomFilter, setOnlyCustomFilter] = useState(false);
@@ -285,6 +380,20 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
     );
   }
 
+  if (showAddToWorkout && selectedExercise) {
+    return (
+      <AddToWorkoutScreen
+        workouts={MOCK_WORKOUTS}
+        onBack={() => setShowAddToWorkout(false)}
+        onBackToList={() => {
+          setShowAddToWorkout(false);
+          setSelectedExercise(null);
+          onHideSubPage();
+        }}
+      />
+    );
+  }
+
   if (selectedExercise) {
     return (
       <ExerciseDetail
@@ -294,6 +403,7 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
           if (!showSearch) onHideSubPage();
         }}
         onEdit={() => setEditingExercise(selectedExercise)}
+        onAddToWorkout={() => setShowAddToWorkout(true)}
       />
     );
   }

@@ -110,33 +110,6 @@
 /* Actions */
 .create__actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   flex-shrink: 0;
-}
-
-.create__btn-save,
-.create__btn-cancel {
-  height: var(--input-height);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.create__btn-save {
-  width: 177px;
-  background: var(--accent);
-}
-
-.create__btn-cancel {
-  width: 161px;
-  background: #fff;
 }

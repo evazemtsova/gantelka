@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Exercise, ExerciseType, MuscleGroup } from '../types';
 import { ScreenHeader } from '../components/ui/ScreenHeader';
 import { Dropdown } from '../components/ui/Dropdown';
+import { Button } from '../components/ui/Button';
 import './CreateExercise.css';
 
 const MUSCLE_GROUP_LABELS: Record<string, string> = {
@@ -154,12 +155,8 @@ export default function CreateExercise({ onBack, onSave, initialExercise }: Prop
 
       {/* Actions */}
       <div className="create__actions">
-        <button className="create__btn-save" onClick={handleSave}>
-          Сохранить
-        </button>
-        <button className="create__btn-cancel" onClick={onBack}>
-          Отменить
-        </button>
+        <Button variant="filled" flex onClick={handleSave}>Сохранить</Button>
+        <Button variant="outlined" flex onClick={onBack}>Отменить</Button>
       </div>
     </div>
   );

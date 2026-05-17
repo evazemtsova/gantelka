@@ -1,0 +1,133 @@
+.login {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ─── Hero (light) ─────────────────────────────────────────────────────── */
+
+.login__hero {
+  background: var(--bg);
+  color: var(--text);
+  padding: 240px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.login__logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.login__title {
+  font-family: var(--font-mono);
+  font-size: 56px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.login__subtitle {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+  max-width: 340px;
+  margin-bottom: 40px;
+}
+
+.login__highlight {
+  display: inline-block;
+  background: #000;
+  color: #fff;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.login__cta {
+  width: 100%;
+  max-width: 360px;
+}
+
+/* Make the CTA taller and bolder than the standard 50px button */
+.login__cta .btn {
+  height: 64px;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.login__cta .btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ─── Features (dark) ──────────────────────────────────────────────────── */
+
+.login__features {
+  background: #0f0f0f;
+  color: #fff;
+  padding: 48px 32px 32px;
+}
+
+.login__features-title {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.login__features-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+
+.login__feature {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.login__feature-num {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--accent);
+  min-width: 64px;
+}
+
+.login__feature-label {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Footer ───────────────────────────────────────────────────────────── */
+
+.login__footer {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  line-height: 1.8;
+  color: #fff;
+  padding-top: 16px;
+}

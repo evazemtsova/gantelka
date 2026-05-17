@@ -1,0 +1,67 @@
+.sortable-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--text-muted);
+}
+
+.sortable-item:first-child { padding-top: 0; }
+.sortable-item:last-child  { border-bottom: none; padding-bottom: 0; }
+
+.sortable-item--dragging { opacity: 0.35; }
+
+.sortable-item__handle {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: var(--text-muted);
+  touch-action: none;
+}
+
+.sortable-item__handle:active { cursor: grabbing; }
+
+.sortable-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sortable-item__name {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 27.5px;
+  color: var(--text);
+}
+
+.sortable-item__meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.sortable-item__remove {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text);
+}
+
+.sortable-item__remove svg { width: 20px; height: 20px; }

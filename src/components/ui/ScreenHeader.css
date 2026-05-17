@@ -25,4 +25,9 @@
   line-height: 48px;
   text-transform: uppercase;
   color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis; /* fallback (Firefox) */
+  text-overflow: "..";     /* Chrome / Safari / Edge */
 }

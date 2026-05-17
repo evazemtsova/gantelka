@@ -2,7 +2,9 @@ import { useState } from 'react';
 import Dashboard from '../pages/Dashboard';
 import Exercises from '../pages/Exercises';
 import Home from '../pages/Home';
+import Login from '../pages/Login';
 import Progress from '../pages/Progress';
+import Workouts from '../pages/Workouts';
 import './Layout.css';
 
 type Page = 'main' | 'analytics' | 'profile';
@@ -54,6 +56,7 @@ const NAV_ITEMS: { id: Page; label: string; Icon: React.ComponentType<{ active?:
 ];
 
 export default function Layout() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [page, setPage] = useState<Page>('main');
   const [mainView, setMainView] = useState<MainView>('home');
   const [hideNav, setHideNav] = useState(false);
@@ -62,6 +65,16 @@ export default function Layout() {
     setPage(id);
     if (id === 'main') setMainView('home');
     setHideNav(false);
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="layout">
+        <div className="content">
+          <Login onLogin={() => setIsAuthenticated(true)} />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -80,9 +93,10 @@ export default function Layout() {
           />
         )}
         {page === 'main' && mainView === 'workouts' && (
-          <div className="stub-page">
-            <p>Тренировки</p>
-          </div>
+          <Workouts
+            onShowSubPage={() => setHideNav(true)}
+            onHideSubPage={() => setHideNav(false)}
+          />
         )}
         {page === 'analytics' && <Progress />}
         {page === 'profile' && <Dashboard />}

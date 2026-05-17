@@ -1,0 +1,43 @@
+.btn {
+  height: var(--input-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.btn--filled  { background: var(--accent); }
+.btn--outlined { background: #fff; }
+
+.btn--flex       { flex: 1; }
+.btn--full-width { width: 100%; }
+
+.btn--icon-only {
+  width: 50px;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn__icon svg,
+.btn--icon-only svg {
+  width: 20px;
+  height: 20px;
+}

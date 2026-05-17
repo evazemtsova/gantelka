@@ -1,0 +1,329 @@
+/* ─── Main workout list ─────────────────────────────────────────────────────── */
+
+.workouts {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.workouts__title {
+  font-family: var(--font-mono);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 48px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.workouts__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.workouts__section-title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 25px;
+}
+
+.workouts__list {
+  list-style: none;
+}
+
+/* ─── Archive ────────────────────────────────────────────────────────────────── */
+
+.workouts-archive {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.workouts-archive__list {
+  list-style: none;
+}
+
+.workouts-archive__empty {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── Workout detail ─────────────────────────────────────────────────────────── */
+
+.workout-detail {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+}
+
+.workout-detail__content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.workout-detail__ex-list {
+  list-style: none;
+}
+
+.workout-detail__empty {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.workout-detail__actions {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  padding-top: 24px;
+}
+
+
+/* ─── Create workout ─────────────────────────────────────────────────────────── */
+
+.create-workout {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+}
+
+.create-workout__content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.create-workout__field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.create-workout__label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.create-workout__input {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.create-workout__input::placeholder {
+  color: var(--text-muted);
+}
+
+.create-workout__ex-list {
+  list-style: none;
+  margin-bottom: 4px;
+}
+
+.create-workout__actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 24px;
+}
+
+
+/* ─── Add exercises ──────────────────────────────────────────────────────────── */
+
+.add-exercises {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+  gap: 34px;
+}
+
+.add-exercises__top {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.add-exercises__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  height: var(--input-height);
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.add-exercises__search svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.add-exercises__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.add-exercises__input::placeholder {
+  color: var(--text-muted);
+}
+
+.add-exercises__clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+
+.add-exercises__results {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.add-exercises__count {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.add-exercises__result-list {
+  list-style: none;
+}
+
+
+/* ─── Add to split ───────────────────────────────────────────────────────────── */
+
+/* ─── Split screen (empty state) ────────────────────────────────────────────── */
+
+.split-screen {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* ─── Split edit ─────────────────────────────────────────────────────────────── */
+
+.split-edit {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+}
+
+.split-edit__content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.split-edit__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.split-edit__label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.split-edit__list {
+  list-style: none;
+  margin-bottom: 4px;
+}
+
+.split-edit__actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 24px;
+}
+
+/* ─── Split add workouts ─────────────────────────────────────────────────────── */
+
+.split-add {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100%;
+  gap: 34px;
+}
+
+.split-add__content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.split-add__list {
+  list-style: none;
+}
+
+
+.split-add__empty {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
