@@ -14,76 +14,77 @@
 ## Главные архитектурные решения
 
 ### 1. Нет роутера
-Вся навигация — `useState` в [Layout.tsx](../src/components/Layout.tsx). 3 таба (главная/сводка/профиль) + early-return ветки для оверлеев (Login, DevSelect, WorkoutSession, превью). Внутри табов — собственный `view` state для sub-screens (например, Workouts: list / archive / create / detail / edit).
+Вся навигация — `useState` в [Layout.tsx](../frontend/src/components/Layout.tsx). 3 таба (главная/сводка/профиль) + early-return ветки для оверлеев (Login, DevSelect, WorkoutSession, превью). Внутри табов — собственный `view` state для sub-screens (например, Workouts: list / archive / create / detail / edit).
 
 **Почему:** для PWA без deep-link это проще. Если позже понадобится share-by-URL — добавим react-router без переписывания страниц.
 
 ### 2. Единое хранилище через React Context
-[src/store/WorkoutsContext.tsx](../src/store/WorkoutsContext.tsx) — `useReducer` поверх Context. Селекторы: `useActiveWorkouts`, `useArchivedWorkouts`, `useCurrentWorkout`, `useExercises`.
+[src/store/WorkoutsContext.tsx](../frontend/src/store/WorkoutsContext.tsx) — `useReducer` поверх Context. Селекторы: `useActiveWorkouts`, `useArchivedWorkouts`, `useCurrentWorkout`, `useExercises`.
 
 **Почему:** один источник правды для упражнений, тренировок, текущей тренировки. До этого данные жили в каждом компоненте отдельно — при подключении API контракт сломался бы.
 
 **Когда заменить:** при первой реальной асинхронной работе (API) — можно ввести React Query / SWR поверх существующих экшенов. Reducer останется как локальный кэш.
 
-### 3. Канонические типы в `src/types/index.ts`
+### 3. Канонические типы в `frontend/src/types/index.ts`
 `Exercise`, `Workout`, `WorkoutSet`, `MuscleGroup`, `ExerciseType`. Локальные дубли запрещены — расхождение этих типов мгновенно ломает контракт с бэком.
 
-### 4. Seed-данные в `src/data/exercises.ts`
+### 4. Seed-данные в `frontend/src/data/exercises.ts`
 `SEED_EXERCISES` и `SEED_WORKOUTS` — единственный источник стартовых данных. Reducer заводит их в initial state. Когда появится API — `initialState` заменится на пустой, данные приедут асинхронно.
 
-### 5. Локализованные строки в `src/constants/labels.ts`
+### 5. Локализованные строки в `frontend/src/constants/labels.ts`
 `MUSCLE_LABELS_CAP`, `MUSCLE_LABELS_LOWER`, `EXERCISE_TYPE_LABELS`, `EXERCISE_PARAMS_LABELS`, `SELECTABLE_MUSCLE_GROUPS`, хелпер `exerciseMeta(ex)`. Никаких локальных словарей в компонентах.
 
 ### 6. Дизайн-токены в `:root`
-[src/components/Layout.css](../src/components/Layout.css) объявляет все цвета, шрифты, размеры, тени как CSS-переменные. Хардкод цвета `#abd600` в CSS — это баг, заменять на `var(--accent-dark)`.
+[src/components/Layout.css](../frontend/src/components/Layout.css) объявляет все цвета, шрифты, размеры, тени как CSS-переменные. Хардкод цвета `#abd600` в CSS — это баг, заменять на `var(--accent-dark)`.
 
 ## Структура файлов
 
 ```
-src/
-  App.tsx                      — просто <Layout/>
-  main.tsx                     — root + WorkoutsProvider
-  index.css                    — global reset, body
-  types/index.ts               — Exercise, Workout, WorkoutSet, ...
-  data/
-    exercises.ts               — SEED_EXERCISES, SEED_WORKOUTS
-  constants/
-    labels.ts                  — все человекочитаемые подписи
-  store/
-    WorkoutsContext.tsx        — useReducer + provider + селекторы
-  components/
-    Layout.tsx / Layout.css    — навигация, нижний нав-бар, :root токены
-    ui/                        — переиспользуемые UI-примитивы
-      Button.tsx               — filled/outlined, icon, iconOnly, flex, fullWidth, disabled
-      ListItem.tsx             — строка списка со стрелкой
-      ScreenHeader.tsx         — заголовок + back с обрезанием «..»
-      CheckboxRow.tsx          — строка с чекбоксом
-      SortableItem.tsx         — DnD-обёртка для строк
-      Dropdown.tsx             — кастомный dropdown
-      ExerciseInfo.tsx         — детальная карточка упражнения
-      icons.tsx                — все SVG-иконки одним файлом
-  pages/
-    Home.tsx                   — главная (2 состояния)
-    Login.tsx                  — лендинг
-    DevSelect.tsx              — времянка (удалить перед запуском)
-    Dashboard.tsx              — заглушка профиля
-    Progress.tsx               — заглушка сводки
-    WorkoutSession.tsx         — сессия (3 шага: session / date / success)
-    exercises/                 — feature-папка
-      Exercises.tsx            — главная
-      SearchScreen.tsx
-      FiltersPanel.tsx
-      ExerciseDetail.tsx
-      CreateExercise.tsx
-      AddToWorkoutScreen.tsx
-      Exercises.css            — один CSS на всю feature-папку
-    workouts/                  — feature-папка
-      Workouts.tsx             — главная (list/archive/create/edit/detail)
-      AddExercisesScreen.tsx
-      ArchiveScreen.tsx
-      CreateWorkout.tsx
-      WorkoutDetail.tsx
-      Workouts.css             — один CSS на всю feature-папку
+frontend/                      — React-приложение
+  package.json
+  vite.config.ts
+  tsconfig*.json
+  .env.example                 — VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY / VITE_DEV_AUTH
+  index.html
+  public/
+  src/
+    App.tsx                    — просто <Layout/>
+    main.tsx                   — root + WorkoutsProvider
+    index.css                  — global reset, body
+    types/index.ts             — Exercise, Workout, WorkoutSet, ...
+    data/
+      exercises.ts             — SEED_EXERCISES, SEED_WORKOUTS
+    constants/
+      labels.ts                — все человекочитаемые подписи
+    store/
+      WorkoutsContext.tsx      — useReducer + provider + селекторы
+    components/
+      Layout.tsx / Layout.css  — навигация, нижний нав-бар, :root токены
+      ui/                      — переиспользуемые UI-примитивы
+        Button / ListItem / ScreenHeader / CheckboxRow /
+        SortableItem / Dropdown / ExerciseInfo / icons
+    pages/
+      Home.tsx                 — главная (2 состояния)
+      Login.tsx                — лендинг
+      DevSelect.tsx            — времянка (удалить перед запуском)
+      Dashboard.tsx            — заглушка профиля
+      Progress.tsx             — заглушка сводки
+      WorkoutSession.tsx       — сессия (3 шага: session / date / success)
+      exercises/               — feature-папка
+        Exercises.tsx, SearchScreen, FiltersPanel,
+        ExerciseDetail, CreateExercise, AddToWorkoutScreen,
+        Exercises.css          — один CSS на всю feature-папку
+      workouts/                — feature-папка
+        Workouts.tsx, AddExercisesScreen, ArchiveScreen,
+        CreateWorkout, WorkoutDetail,
+        Workouts.css           — один CSS на всю feature-папку
+
+backend/                       — Supabase
+  supabase/
+    migrations/                — DDL по одному файлу на изменение
+      20260517190000_initial.sql
+
+docs/                          — продуктовая и техническая дока
 ```
 
 **Правила структуры:**

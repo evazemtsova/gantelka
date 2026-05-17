@@ -6,6 +6,27 @@
 
 ## 2026-05-17
 
+### 19:45 — Reorg: monorepo layout frontend/ + backend/
+Корень репозитория разделён на `frontend/` (React + Vite) и `backend/` (Supabase миграции). `docs/`, `CLAUDE.md`, `README.md` остаются в корне.
+
+- `src/`, `public/`, `index.html`, `package.json`, `vite.config.ts`, `tsconfig*.json`, `eslint.config.js`, `.env.example` → `frontend/`
+- `supabase/` → `backend/supabase/`
+- `node_modules` переустановлены в `frontend/`
+- Все пути в `docs/*.md`, `CLAUDE.md`, `README.md` обновлены
+- В Vercel надо выставить **Root Directory = `frontend`**
+
+Зачем: чёткое разделение слоёв, чтобы при появлении полноценного backend-сервиса (если потребуется) было куда положить.
+
+### 19:30 — Backend Phase 0: Supabase setup
+Зафиксирован стек бэка: Supabase (Postgres + Auth + PostgREST) + Vercel. Создано:
+- `docs/BACKEND_PLAN.md` — фазовый план миграции (Phase 0 setup → Phase 1 auth → Phase 2 read → Phase 3 write → Phase 4 sessions/sets)
+- `supabase/migrations/20260517190000_initial.sql` — схема (`profiles`, `exercises`, `workouts`, `workout_exercises`), RLS-политики на все таблицы, триггер `handle_new_user` для сидинга
+- `.env.example` с `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_DEV_AUTH`
+- `.gitignore` обновлён (`.env`)
+- `docs/BACKEND.md` переписан под Supabase: контракт, mapping reducer-actions → DB-операций, правила RLS, миграций, security
+
+Auth: Google OAuth (основной) + Anonymous Sign-In (для «попробовать без регистрации»). DevSelect будет удалён в Phase 1. Зачем: фундамент для подключения реального хранилища без блокировки фронта.
+
 ### 19:00 — Правила: разделение по специальностям
 `CODING_RULES.md` разбит на 3 файла:
 - `PRINCIPLES.md` — универсальные принципы (reuse, single source of truth, не делать на будущее, не глушить типы, чек-листы перед коммитом и удалением)

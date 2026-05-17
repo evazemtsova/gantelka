@@ -8,14 +8,14 @@
 
 | Нужно | Используй |
 |---|---|
-| Кнопка (filled/outlined, с иконкой, full-width, flex, disabled) | `<Button>` из [components/ui/Button.tsx](../src/components/ui/Button.tsx) |
+| Кнопка (filled/outlined, с иконкой, full-width, flex, disabled) | `<Button>` из [components/ui/Button.tsx](../frontend/src/components/ui/Button.tsx) |
 | Элемент списка со стрелкой | `<ListItem>` |
 | Заголовок экрана с «назад» и обрезанием «..» | `<ScreenHeader>` |
 | Строка с чекбоксом | `<CheckboxRow>` |
 | Перетаскиваемая строка | `<SortableItem>` + `DndContext` |
 | Селект | `<Dropdown>` |
 | Детальная карточка упражнения | `<ExerciseInfo>` |
-| Иконка | [components/ui/icons.tsx](../src/components/ui/icons.tsx) |
+| Иконка | [components/ui/icons.tsx](../frontend/src/components/ui/icons.tsx) |
 | Поле ввода с placeholder, шириной, тенью | `.session__input` стиль (TODO: вынести в `<TextField>`) |
 
 **Антипаттерн:** кастомный `<button>` с дублированными стилями `border + box-shadow + uppercase + font-mono`. Если `<Button>` не покрывает кейс — расширь его, не делай локальный.
@@ -24,11 +24,11 @@
 
 | Что | Где |
 |---|---|
-| Domain-типы (`Exercise`, `Workout`, `WorkoutSet`) | [types/index.ts](../src/types/index.ts) |
-| Seed-данные (стартовые упражнения и тренировки) | [data/exercises.ts](../src/data/exercises.ts) |
-| Состояние тренировок и упражнений | [store/WorkoutsContext.tsx](../src/store/WorkoutsContext.tsx) |
-| Подписи (группы мышц, типы, параметры) | [constants/labels.ts](../src/constants/labels.ts) |
-| Цвета, шрифты, размеры | `:root` в [Layout.css](../src/components/Layout.css) |
+| Domain-типы (`Exercise`, `Workout`, `WorkoutSet`) | [types/index.ts](../frontend/src/types/index.ts) |
+| Seed-данные (стартовые упражнения и тренировки) | [data/exercises.ts](../frontend/src/data/exercises.ts) |
+| Состояние тренировок и упражнений | [store/WorkoutsContext.tsx](../frontend/src/store/WorkoutsContext.tsx) |
+| Подписи (группы мышц, типы, параметры) | [constants/labels.ts](../frontend/src/constants/labels.ts) |
+| Цвета, шрифты, размеры | `:root` в [Layout.css](../frontend/src/components/Layout.css) |
 
 **Запрещено:**
 - Локальные `MUSCLE_LABELS` / `TYPE_LABELS` в компонентах
@@ -92,7 +92,7 @@ return <List ... />;
 
 ## 8. Перед коммитом фронта
 
-В дополнение к [PRINCIPLES § 7](./PRINCIPLES.md#7-перед-коммитом):
+В дополнение к [PRINCIPLES § 7](./PRINCIPLES.md#7-перед-коммитом). Команды запускать из `frontend/`:
 
 1. `npx tsc --noEmit -p tsconfig.app.json` — clean
 2. `npm run build` — успешно

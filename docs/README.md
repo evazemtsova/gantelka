@@ -9,7 +9,8 @@
 
 - [PRINCIPLES.md](./PRINCIPLES.md) — универсальные принципы (общие для фронта и бэка)
 - [FRONTEND.md](./FRONTEND.md) — правила фронта (React, TS, CSS, UI-компоненты)
-- [BACKEND.md](./BACKEND.md) — правила бэка (стаб; контракт с фронтом уже зафиксирован)
+- [BACKEND.md](./BACKEND.md) — правила бэка (Supabase + Vercel)
+- [BACKEND_PLAN.md](./BACKEND_PLAN.md) — живой план миграции на бек, по фазам
 
 ## Журнал
 

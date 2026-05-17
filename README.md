@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# Гантелька
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+PWA фитнес-трекер. Мобильное приложение (max-width 480px) — персональный тренировочный блокнот.
 
-Currently, two official plugins are available:
+## Layout
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+frontend/    — React 19 + TS + Vite
+backend/     — Supabase (SQL миграции, RLS, триггеры)
+docs/        — продуктовая и техническая документация
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Быстрый старт
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd frontend
+npm install
+cp .env.example .env.local        # заполнить VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY
+npm run dev                       # http://localhost:5173
 ```
+
+Скрипты:
+- `npm run dev` — Vite dev server
+- `npm run build` — `tsc -b && vite build`
+- `npm run lint` — ESLint
+- `npm run preview` — посмотреть прод-билд
+
+## Документация
+
+- [docs/PRD.md](docs/PRD.md) — продуктовое описание
+- [docs/TDR.md](docs/TDR.md) — техническое описание архитектуры
+- [docs/PRINCIPLES.md](docs/PRINCIPLES.md) — общие правила кода
+- [docs/FRONTEND.md](docs/FRONTEND.md) — правила фронта
+- [docs/BACKEND.md](docs/BACKEND.md) — правила бэка
+- [docs/BACKEND_PLAN.md](docs/BACKEND_PLAN.md) — план миграции на Supabase
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) — журнал изменений
+
+## Деплой
+
+- Frontend → Vercel (Root Directory = `frontend`)
+- Backend → Supabase (SQL Editor или Supabase CLI)

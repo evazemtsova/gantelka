@@ -2,26 +2,24 @@
 
 Дополнение к [PRINCIPLES.md](./PRINCIPLES.md). Только специфичное для серверной части.
 
-> **Статус:** заготовка. Стек бэка ещё не выбран. Этот файл заполняется по мере появления решений. До первой строчки серверного кода — раздел «Контракт с фронтом» уже зафиксирован, всё остальное TODO.
-
----
-
 ## Стек
 
-**TODO.** Не выбран. Кандидаты:
-- Python + FastAPI + SQLAlchemy + Postgres
-- Node + Fastify + Drizzle + Postgres
+**Supabase** (managed Postgres + PostgREST API + GoTrue Auth).
 
-Решение фиксируется здесь после первой задачи на бэк.
+- Хостинг фронта: Vercel
+- БД: Supabase Postgres
+- Auth: Supabase (Google OAuth + Anonymous)
+- API: PostgREST через `@supabase/supabase-js` (фронт обращается напрямую)
+- Безопасность: RLS на всех таблицах
+- Миграции: `backend/supabase/migrations/*.sql`
+
+**Своего бекенд-сервиса нет.** Логика — в БД (RLS, триггеры, view, RPC при необходимости). Если в будущем потребуется тяжёлая серверная логика — поднимем отдельный сервис рядом, БД остаётся в Supabase.
+
+Действующий план миграции на бек: [BACKEND_PLAN.md](./BACKEND_PLAN.md).
 
 ## Контракт с фронтом
 
-Фронт уже использует `useReducer` с экшенами, которые маппятся 1-в-1 на REST-эндпойнты. См. [TDR § «Что готово для бэка»](./TDR.md#что-готово-для-бэка).
-
-Договорённости, которые менять нельзя без обновления фронта:
-
-### Domain-модели
-Эталон — [src/types/index.ts](../src/types/index.ts). Бек обязан возвращать JSON, который сериализуется в эти типы.
+Эталон domain-моделей — [src/types/index.ts](../frontend/src/types/index.ts).
 
 ```
 Exercise        { id, name, muscleGroup, exerciseType, isCustom?, description? }
@@ -29,94 +27,88 @@ Workout         { id, name, date, exercises: Exercise[], isArchived?, isTrial? }
 WorkoutSet      { id, reps: string, weight: string }
 ```
 
-- `exercises` приходит inline (не `exerciseIds`) — упрощает фронт
-- `reps` / `weight` — строки (форма ввода), бек хранит как numeric, преобразование на границе
-- `isTrial: true` — пробные тренировки, нельзя удалять/архивировать
+- БД хранит `is_archived` / `is_trial` / `muscle_group` / `exercise_type` (snake_case), клиент маппит на camelCase
+- `exercises` приходит inline (join через `workout_exercises`), а не списком id
+- `isTrial: true` — пробные тренировки, нельзя редактировать / удалять / архивировать (enforced на UI; на БД можно — для админских действий)
 
-### Эндпойнты (целевой план)
+## Mapping reducer-actions → DB-операции
 
-| Frontend action | Метод | Путь |
-|---|---|---|
-| `set-current` | PATCH | `/me` (поле `currentWorkoutId`) |
-| `add-workout` | POST | `/workouts` |
-| `update-workout` | PATCH | `/workouts/:id` |
-| `archive-workout` | PATCH | `/workouts/:id` (поле `isArchived: true`) |
-| `unarchive-workout` | PATCH | `/workouts/:id` (поле `isArchived: false`) |
-| `delete-workout` | DELETE | `/workouts/:id` |
-| `add-exercise` | POST | `/exercises` |
-| `update-exercise` | PATCH | `/exercises/:id` |
-| `add-exercise-to-workout` | POST | `/workouts/:id/exercises` |
+| Фронт-action | Supabase-операция |
+|---|---|
+| `set-current` | `profiles.update({ current_workout_id })` |
+| `add-workout` | `workouts.insert` |
+| `update-workout` | `workouts.update` + sync `workout_exercises` (replace) |
+| `archive-workout` | `workouts.update({ is_archived: true })` |
+| `unarchive-workout` | `workouts.update({ is_archived: false })` |
+| `delete-workout` | `workouts.delete` (RLS-cascade чистит workout_exercises) |
+| `add-exercise` | `exercises.insert` |
+| `update-exercise` | `exercises.update` |
+| `add-exercise-to-workout` | `workout_exercises.insert` |
 
-Эндпойнты для чтения:
-- `GET /me` — текущий пользователь + currentWorkoutId
-- `GET /workouts` — все тренировки пользователя
-- `GET /exercises` — все упражнения пользователя (включая seed)
+Чтение:
+- `GET /workouts?select=*,workout_exercises(*,exercise:exercises(*))&order=position`
+- `GET /exercises?select=*`
+- `GET /profiles?select=*&id=eq.<uid>`
 
-### Аутентификация
+## Правила работы с Supabase
 
-**TODO.** Решение: Google OAuth, JWT-токен в httpOnly cookie. Зафиксировать когда возьмёмся.
+### 1. Никогда не использовать service_role на клиенте
+Только `anon` ключ. Service-role-ключ — только для серверных скриптов / Supabase Edge Functions, никогда не в `import.meta.env`.
 
-## Правила, которые точно будут (вне зависимости от стека)
+### 2. RLS — обязательна на каждой новой таблице
+Шаблон при создании таблицы:
+```sql
+create table public.foo (...);
+alter table public.foo enable row level security;
+create policy "foo_select_own" on public.foo for select using (auth.uid() = user_id);
+-- … insert / update / delete
+```
+Если RLS не включить — таблица читается всеми. Это критический баг.
 
-### 1. Не доверять клиенту
-Любой запрос:
-- Авторизация (`userId` из токена, не из тела)
-- Валидация payload (zod / pydantic / что выбрано)
-- Authorization-чек (юзер X не может править тренировку юзера Y)
+### 3. Миграции — атомарно, в файлах
+- Один файл миграции = одна логическая правка
+- Файл нельзя редактировать после применения на проде — только новая миграция
+- Имена: `YYYYMMDDHHMMSS_<short_name>.sql`
 
-### 2. Миграции — атомарно
-- Каждая миграция — одна логическая правка
-- Down-миграция или явный комментарий, почему откат невозможен
-- Тестировать на копии прода перед применением
+### 4. Idempotency
+- DDL: `create table if not exists` / `drop ... if exists` где уместно (для повторного запуска на чистой БД)
+- DML триггеры: `on conflict do nothing` где уместно
 
-### 3. SQL — через ORM или query builder, не строками
-- Параметризованные запросы, нулевая толерантность к SQL-injection
-- Сырой SQL только если ORM реально не может — с комментарием
+### 5. Don't trust the client
+RLS защищает доступ. Но на бизнес-логику — отдельные проверки в триггерах / RPC, не на клиенте.
 
-### 4. Idempotency для мутаций
-- DELETE — идемпотентен (повторный вызов = 404 или 204, не 500)
-- POST — где имеет смысл, через Idempotency-Key
+Например: «нельзя архивировать чужую тренировку» — это RLS. «Нельзя удалить пробную тренировку» — это либо `before delete` триггер, либо UI-only ограничение (что мы сейчас и сделали).
 
-### 5. Логи
-- Структурированные (JSON), не строки
-- Уровень: DEBUG / INFO / WARN / ERROR — без INFO-спама в проде
-- Не логировать персональные данные (имена, email, токены)
+### 6. Performance
+- Индекс на `user_id` обязателен — все запросы фильтруют по нему
+- Eager-load связанных через PostgREST nested select, а не N+1 запросами
+- Запросы списков — с лимитом, даже если пока «у пользователя 4 тренировки»
 
-### 6. Тесты
-- Каждый эндпойнт — минимум один happy-path тест и один permission-fail тест
-- Юнит-тесты для бизнес-логики (не для CRUD-обёрток)
-- Интеграционные тесты — на реальной БД, не на моках
+### 7. Что НЕ делать
+- Не хранить чувствительное в `auth.users.user_metadata` (оно публично читается)
+- Не доверять `is_anonymous` для бизнес-решений (юзер может быть anonymous но это валидный auth)
+- Не использовать `auth.uid()` в DEFAULT колонок — оно может быть null в триггере. Только в RLS-политиках и в RPC.
 
-## Структура (целевая)
+## Структура
 
 ```
 backend/
+  supabase/
+    migrations/             — DDL, по одному файлу на изменение
+    config.toml             — конфиг CLI (появится после `supabase init`)
+
+frontend/
   src/
-    api/              — роуты, контроллеры
-    services/         — бизнес-логика
-    models/           — ORM-модели
-    schemas/          — валидация запросов/ответов
-    db/               — connection, migrations
-    auth/             — JWT, OAuth
-  tests/
-  migrations/
+    lib/
+      supabase.ts           — клиент @supabase/supabase-js
+      queries.ts            — функции-обёртки над таблицами (типизированные)
 ```
-
-**Запрещено:** бизнес-логика в роутах. Роут — тонкая обёртка над сервисом.
-
-## Что НЕ делать на беке
-
-- Не делать GraphQL без явной причины (REST + типизированные клиенты дешевле)
-- Не делать микросервисы на старте (один сервис, разделится когда понадобится)
-- Не хранить состояние в памяти процесса (масштабирование убьёт)
-- Не использовать ORM N+1 паттерн — eager load по умолчанию для списков
 
 ## Перед коммитом бэка
 
 В дополнение к [PRINCIPLES § 7](./PRINCIPLES.md#7-перед-коммитом):
 
-1. Тайп-чек / линтер проходит
-2. Тесты зелёные (`pytest` / `vitest` — что выбрано)
-3. Миграции применяются / откатываются на пустой БД
-4. OpenAPI / схема обновлена (если меняли контракт)
-5. Если меняли контракт — пинг фронту, согласовать
+1. Миграция применяется на чистой БД (тест: `supabase db reset` локально)
+2. RLS включён на каждой новой таблице, политики покрывают select/insert/update/delete
+3. Типы фронта (`frontend/src/types/index.ts`) согласованы со схемой
+4. Если меняется контракт — обновлён `BACKEND.md` и `BACKEND_PLAN.md`
