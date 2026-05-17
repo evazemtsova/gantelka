@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useReducer, useRef, type ReactNode } from 'react';
-import type { Exercise, Workout } from '../types';
+import type { Exercise, Session, Workout } from '../types';
 import { SEED_EXERCISES, SEED_WORKOUTS } from '../data/exercises';
 import { persistAction, type PersistableAction } from '../lib/queries';
 import { useSession } from '../lib/auth';
@@ -9,12 +9,13 @@ const IS_MOCK = import.meta.env.VITE_DEV_AUTH === 'mock';
 interface State {
   exercises: Exercise[];
   workouts: Workout[];
+  sessions: Session[];
   currentWorkoutId: string | null;
   hydrated: boolean;
 }
 
 type Action =
-  | { type: 'hydrate'; exercises: Exercise[]; workouts: Workout[]; currentWorkoutId: string | null }
+  | { type: 'hydrate'; exercises: Exercise[]; workouts: Workout[]; sessions: Session[]; currentWorkoutId: string | null }
   | { type: 'reset' }
   | { type: 'set-current'; id: string | null }
   | { type: 'add-workout'; workout: Workout }
@@ -24,13 +25,14 @@ type Action =
   | { type: 'delete-workout'; id: string }
   | { type: 'add-exercise'; exercise: Exercise }
   | { type: 'update-exercise'; exercise: Exercise }
-  | { type: 'add-exercise-to-workout'; workoutId: string; exercise: Exercise };
+  | { type: 'add-exercise-to-workout'; workoutId: string; exercise: Exercise }
+  | { type: 'add-session'; session: Session };
 
 // В mock-режиме сразу наполняем seed'ом и считаем гидратированным.
 // В реальном режиме ждём fetch из Supabase (Layout дёргает hydrate-action).
 const initialState: State = IS_MOCK
-  ? { exercises: SEED_EXERCISES, workouts: SEED_WORKOUTS, currentWorkoutId: null, hydrated: true }
-  : { exercises: [], workouts: [], currentWorkoutId: null, hydrated: false };
+  ? { exercises: SEED_EXERCISES, workouts: SEED_WORKOUTS, sessions: [], currentWorkoutId: null, hydrated: true }
+  : { exercises: [], workouts: [], sessions: [], currentWorkoutId: null, hydrated: false };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -38,14 +40,15 @@ function reducer(state: State, action: Action): State {
       return {
         exercises: action.exercises,
         workouts: action.workouts,
+        sessions: action.sessions,
         currentWorkoutId: action.currentWorkoutId,
         hydrated: true,
       };
 
     case 'reset':
       return IS_MOCK
-        ? { exercises: SEED_EXERCISES, workouts: SEED_WORKOUTS, currentWorkoutId: null, hydrated: true }
-        : { exercises: [], workouts: [], currentWorkoutId: null, hydrated: false };
+        ? { exercises: SEED_EXERCISES, workouts: SEED_WORKOUTS, sessions: [], currentWorkoutId: null, hydrated: true }
+        : { exercises: [], workouts: [], sessions: [], currentWorkoutId: null, hydrated: false };
 
     case 'set-current':
       return { ...state, currentWorkoutId: action.id };
@@ -105,6 +108,9 @@ function reducer(state: State, action: Action): State {
             : w,
         ),
       };
+
+    case 'add-session':
+      return { ...state, sessions: [action.session, ...state.sessions] };
 
     default:
       return state;
@@ -183,4 +189,10 @@ export function useCurrentWorkout(): Workout | null {
 export function useExercises(): Exercise[] {
   const { state } = useWorkouts();
   return state.exercises;
+}
+
+/** Сессии отсортированы по finishedAt desc (свежие сверху). */
+export function useSessions(): Session[] {
+  const { state } = useWorkouts();
+  return state.sessions;
 }

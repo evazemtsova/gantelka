@@ -36,6 +36,16 @@ export interface Workout {
   isTrial?: boolean;
 }
 
+/** Завершённая тренировка — запись в истории. */
+export interface Session {
+  id: string;
+  workoutId: string | null;       // null если шаблон удалён
+  workoutName: string;            // снимок имени на момент завершения
+  exerciseCount: number;
+  nextWorkoutDate: string | null;
+  finishedAt: string;             // ISO
+}
+
 export interface BodyMeasurement {
   id: string;
   date: string;

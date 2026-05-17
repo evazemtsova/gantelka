@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-05-18
+
+### Phase 4 (partial) — реальная история на главной
+- Новая таблица `public.sessions` с RLS (миграция `20260517210000_sessions.sql`). Поля: `workout_id` (set null при удалении), денормализованный `workout_name`, `exercise_count`, `next_workout_date`, `finished_at`. Индекс `(user_id, finished_at desc)`.
+- Тип `Session` в `types/index.ts`. Reducer-state получил `sessions: Session[]`, action `add-session`, селектор `useSessions()`.
+- `queries.ts`: hydration параллельно тянет sessions (limit 50, desc по finished_at). `persistAction` пишет в БД при add-session.
+- `WorkoutSession`: при клике «готово» на date-шаге диспатчит add-session со снимком `workoutName`/`exerciseCount` + следующая дата. Только потом переход на success.
+- `Home`: `HISTORY_STUB` удалён. Реальный список последних 5 сессий с форматом «N месяца • K упражнений». Блок «история» прячется если sessions пусты.
+
+**TODO юзеру:** применить миграцию `backend/supabase/migrations/20260517210000_sessions.sql` в Supabase SQL Editor.
+
 ## 2026-05-17
 
 ### 23:10 — Fix: визуальная полировка после миграции на дизайн-систему

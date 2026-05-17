@@ -35,7 +35,7 @@ interface Props {
 }
 
 export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProgress }: Props) {
-  const { state } = useWorkouts();
+  const { state, dispatch } = useWorkouts();
   const workout = state.workouts.find((w) => w.id === workoutId);
   const exercises = workout?.exercises ?? [];
   const activeWorkouts = useActiveWorkouts();
@@ -112,7 +112,21 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
             variant="filled"
             fullWidth
             disabled={!canConfirmDate}
-            onClick={() => setStep('success')}
+            onClick={() => {
+              if (!workout) return;
+              dispatch({
+                type: 'add-session',
+                session: {
+                  id: crypto.randomUUID(),
+                  workoutId: workout.id,
+                  workoutName: workout.name,
+                  exerciseCount: workout.exercises.length,
+                  nextWorkoutDate: nextDate || null,
+                  finishedAt: new Date().toISOString(),
+                },
+              });
+              setStep('success');
+            }}
           >
             готово
           </Button>

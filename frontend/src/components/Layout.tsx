@@ -95,6 +95,7 @@ export default function Layout() {
           type: 'hydrate',
           exercises: data.exercises,
           workouts: data.workouts,
+          sessions: data.sessions,
           currentWorkoutId: data.currentWorkoutId,
         });
       },

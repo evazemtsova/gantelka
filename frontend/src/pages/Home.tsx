@@ -1,6 +1,6 @@
 import { ListItem } from '../components/ui/ListItem';
 import { LogoFull } from '../components/ui/icons';
-import { useCurrentWorkout } from '../store/WorkoutsContext';
+import { useCurrentWorkout, useSessions } from '../store/WorkoutsContext';
 import './Home.css';
 
 function PlayIcon() {
@@ -11,10 +11,17 @@ function PlayIcon() {
   );
 }
 
-const HISTORY_STUB = [
-  { id: '1', name: 'День ног ягодицы', date: '20 марта', count: 5 },
-  { id: '2', name: 'День ног квадры',   date: '19 марта', count: 5 },
+const RU_MONTHS = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ];
+
+function formatFinishedAt(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate()} ${RU_MONTHS[d.getMonth()]}`;
+}
+
+const HISTORY_LIMIT = 5;
 
 interface Props {
   onStartTrial: () => void;
@@ -30,6 +37,7 @@ export default function Home({
   onStartSession,
 }: Props) {
   const currentWorkout = useCurrentWorkout();
+  const sessions = useSessions().slice(0, HISTORY_LIMIT);
   const hasWorkout = currentWorkout !== null;
 
   if (!hasWorkout) {
@@ -79,18 +87,21 @@ export default function Home({
         </button>
       </div>
 
-      <div className="home__history">
-        <p className="home__history-title">история</p>
-        <ul className="home__history-list">
-          {HISTORY_STUB.map((item) => (
-            <ListItem
-              key={item.id}
-              name={item.name}
-              meta={`${item.date} • ${item.count} упражнений`}
-            />
-          ))}
-        </ul>
-      </div>
+      {sessions.length > 0 && (
+        <div className="home__history">
+          <p className="home__history-title">история</p>
+          <ul className="home__history-list">
+            {sessions.map((s) => (
+              <ListItem
+                key={s.id}
+                name={s.workoutName}
+                meta={`${formatFinishedAt(s.finishedAt)} • ${s.exerciseCount} упражнений`}
+                arrow={false}
+              />
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

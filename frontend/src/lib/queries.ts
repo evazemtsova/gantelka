@@ -1,4 +1,4 @@
-import type { Exercise, ExerciseType, MuscleGroup, Workout } from '../types';
+import type { Exercise, ExerciseType, MuscleGroup, Session, Workout } from '../types';
 import { supabase } from './supabase';
 
 const IS_MOCK = import.meta.env.VITE_DEV_AUTH === 'mock';
@@ -35,6 +35,16 @@ interface ProfileRow {
   current_workout_id: string | null;
 }
 
+interface SessionRow {
+  id: string;
+  user_id: string;
+  workout_id: string | null;
+  workout_name: string;
+  exercise_count: number;
+  next_workout_date: string | null;
+  finished_at: string;
+}
+
 // ─── Mappers snake → camel ────────────────────────────────────────────────────
 
 function toExercise(row: ExerciseRow): Exercise {
@@ -45,6 +55,17 @@ function toExercise(row: ExerciseRow): Exercise {
     exerciseType: row.exercise_type,
     isCustom: row.is_custom,
     description: row.description ?? undefined,
+  };
+}
+
+function toSession(row: SessionRow): Session {
+  return {
+    id: row.id,
+    workoutId: row.workout_id,
+    workoutName: row.workout_name,
+    exerciseCount: row.exercise_count,
+    nextWorkoutDate: row.next_workout_date,
+    finishedAt: row.finished_at,
   };
 }
 
@@ -67,27 +88,31 @@ function toWorkout(row: WorkoutRow): Workout {
 export interface HydrationData {
   exercises: Exercise[];
   workouts: Workout[];
+  sessions: Session[];
   currentWorkoutId: string | null;
 }
 
-/** Загружает всё, что нужно для старта app: упражнения, тренировки, current. */
+/** Загружает всё, что нужно для старта app: упражнения, тренировки, сессии, current. */
 export async function fetchHydration(): Promise<HydrationData> {
-  const [exercisesRes, workoutsRes, profileRes] = await Promise.all([
+  const [exercisesRes, workoutsRes, sessionsRes, profileRes] = await Promise.all([
     supabase.from('exercises').select('*').order('created_at'),
     supabase
       .from('workouts')
       .select('*, workout_exercises(position, exercises(*))')
       .order('created_at'),
+    supabase.from('sessions').select('*').order('finished_at', { ascending: false }).limit(50),
     supabase.from('profiles').select('id, current_workout_id').single(),
   ]);
 
   if (exercisesRes.error) throw exercisesRes.error;
   if (workoutsRes.error) throw workoutsRes.error;
+  if (sessionsRes.error) throw sessionsRes.error;
   if (profileRes.error) throw profileRes.error;
 
   return {
     exercises: (exercisesRes.data as ExerciseRow[]).map(toExercise),
     workouts: (workoutsRes.data as WorkoutRow[]).map(toWorkout),
+    sessions: (sessionsRes.data as SessionRow[]).map(toSession),
     currentWorkoutId: (profileRes.data as ProfileRow).current_workout_id,
   };
 }
@@ -112,7 +137,8 @@ type PersistableAction =
   | { type: 'delete-workout'; id: string }
   | { type: 'add-exercise'; exercise: Exercise }
   | { type: 'update-exercise'; exercise: Exercise }
-  | { type: 'add-exercise-to-workout'; workoutId: string; exercise: Exercise };
+  | { type: 'add-exercise-to-workout'; workoutId: string; exercise: Exercise }
+  | { type: 'add-session'; session: Session };
 
 function workoutToRow(w: Workout, userId: string) {
   return {
@@ -247,6 +273,21 @@ export async function persistAction(action: PersistableAction, ctx: PersistConte
         workout_id: action.workoutId,
         exercise_id: action.exercise.id,
         position,
+      });
+      if (error) throw error;
+      return;
+    }
+
+    case 'add-session': {
+      const s = action.session;
+      const { error } = await supabase.from('sessions').insert({
+        id: s.id,
+        user_id: userId,
+        workout_id: s.workoutId,
+        workout_name: s.workoutName,
+        exercise_count: s.exerciseCount,
+        next_workout_date: s.nextWorkoutDate,
+        finished_at: s.finishedAt,
       });
       if (error) throw error;
       return;
