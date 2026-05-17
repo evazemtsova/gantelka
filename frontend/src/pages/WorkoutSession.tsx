@@ -12,7 +12,7 @@ import {
   InfoIcon,
   TrashIcon,
 } from '../components/ui/icons';
-import { useWorkouts, useActiveWorkouts } from '../store/WorkoutsContext';
+import { useWorkouts, useActiveWorkouts, useSessions } from '../store/WorkoutsContext';
 import './WorkoutSession.css';
 
 const newSetId = () => crypto.randomUUID();
@@ -39,12 +39,32 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
   const workout = state.workouts.find((w) => w.id === workoutId);
   const exercises = workout?.exercises ?? [];
   const activeWorkouts = useActiveWorkouts();
+  const sessions = useSessions();
+
+  // Последняя сессия этой тренировки — для префила подходов с прошлого раза
+  const previousSession = sessions.find((s) => s.workoutId === workoutId) ?? null;
 
   const [activeId, setActiveId] = useState<string | null>(exercises[0]?.id ?? null);
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
-  const [setsByEx, setSetsByEx] = useState<Record<string, WorkoutSet[]>>(
-    exercises[0] ? { [exercises[0].id]: [newEmptySet()] } : {},
-  );
+  const [setsByEx, setSetsByEx] = useState<Record<string, WorkoutSet[]>>(() => {
+    const init: Record<string, WorkoutSet[]> = {};
+    if (previousSession) {
+      const currentIds = new Set(exercises.map((e) => e.id));
+      for (const prevEx of previousSession.exercises) {
+        if (!currentIds.has(prevEx.id)) continue;
+        if (prevEx.sets.length === 0) continue;
+        init[prevEx.id] = prevEx.sets.map((s) => ({
+          id: newSetId(),
+          reps: s.reps === null ? '' : String(s.reps),
+          weight: s.weight === null ? '' : String(s.weight),
+        }));
+      }
+    }
+    if (exercises[0] && !init[exercises[0].id]) {
+      init[exercises[0].id] = [newEmptySet()];
+    }
+    return init;
+  });
   const [infoExerciseId, setInfoExerciseId] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>('session');
