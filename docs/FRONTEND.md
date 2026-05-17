@@ -8,17 +8,24 @@
 
 | Нужно | Используй |
 |---|---|
-| Кнопка (filled/outlined, с иконкой, full-width, flex, disabled) | `<Button>` из [components/ui/Button.tsx](../frontend/src/components/ui/Button.tsx) |
+| Кнопка (filled/outlined/icon-only, `size`, `active`, `fullWidth`, `flex`) | `<Button>` |
+| Контейнер экрана (padding + flex-col + gap) | `<Screen>` (prop `withFooter`, `noPadding`) |
+| Залипающий футер экрана | `<ScreenFooter>` (prop `column`) |
+| Поле формы с лейблом | `<Field label="...">` |
+| Строка текстового ввода или textarea | `<TextField>` (prop `multiline`, `inputMode`) |
+| Поле поиска — кнопка-триггер | `<SearchField onClick={...}>` |
+| Поле поиска — с вводом и крестиком | `<SearchField value={...} onChange={...}>` |
+| Тег-переключатель (selected/unselected) | `<Chip>` |
+| Пустое состояние списка | `<EmptyState>` |
 | Элемент списка со стрелкой | `<ListItem>` |
 | Заголовок экрана с «назад» и обрезанием «..» | `<ScreenHeader>` |
 | Строка с чекбоксом | `<CheckboxRow>` |
 | Перетаскиваемая строка | `<SortableItem>` + `DndContext` |
 | Селект | `<Dropdown>` |
 | Детальная карточка упражнения | `<ExerciseInfo>` |
-| Иконка | [components/ui/icons.tsx](../frontend/src/components/ui/icons.tsx) |
-| Поле ввода с placeholder, шириной, тенью | `.session__input` стиль (TODO: вынести в `<TextField>`) |
+| Иконка или логотип | [components/ui/icons.tsx](../frontend/src/components/ui/icons.tsx) |
 
-**Антипаттерн:** кастомный `<button>` с дублированными стилями `border + box-shadow + uppercase + font-mono`. Если `<Button>` не покрывает кейс — расширь его, не делай локальный.
+**Антипаттерн:** кастомный `<button>` / `<input>` / `<textarea>` с дублированными стилями `border + box-shadow + uppercase`. Если примитив не покрывает кейс — расширь его через prop, не делай локальный аналог.
 
 ## 2. Single source of truth для фронта
 
@@ -28,7 +35,9 @@
 | Seed-данные (стартовые упражнения и тренировки) | [data/exercises.ts](../frontend/src/data/exercises.ts) |
 | Состояние тренировок и упражнений | [store/WorkoutsContext.tsx](../frontend/src/store/WorkoutsContext.tsx) |
 | Подписи (группы мышц, типы, параметры) | [constants/labels.ts](../frontend/src/constants/labels.ts) |
-| Цвета, шрифты, размеры | `:root` в [Layout.css](../frontend/src/components/Layout.css) |
+| Цвета, шрифты, размеры | [styles/tokens.css](../frontend/src/styles/tokens.css) |
+| Типографика (`.t-h1`, `.t-body`, `.t-caption` …) | [styles/typography.css](../frontend/src/styles/typography.css) |
+| Утилиты (`.surface`, `.divided-row`, `.chips-row`) | [styles/utilities.css](../frontend/src/styles/utilities.css) |
 
 **Запрещено:**
 - Локальные `MUSCLE_LABELS` / `TYPE_LABELS` в компонентах

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import type { MuscleGroup } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { ScreenFooter } from '../../components/ui/ScreenFooter';
+import { Field } from '../../components/ui/Field';
 import { Dropdown } from '../../components/ui/Dropdown';
 import { Button } from '../../components/ui/Button';
 import { MUSCLE_LABELS_CAP, SELECTABLE_MUSCLE_GROUPS } from '../../constants/labels';
@@ -24,19 +27,18 @@ export function FiltersPanel({ muscleGroup, onlyCustom, hasCustomExercises, onAp
   const [pendingCustom, setPendingCustom] = useState(onlyCustom);
 
   return (
-    <div className="filters">
+    <Screen withFooter>
       <div className="filters__content">
         <ScreenHeader title="Фильтры" onBack={onBack} />
 
-        <div className="filters__field">
-          <span className="filters__label">Группа мышц</span>
+        <Field label="Группа мышц">
           <Dropdown
             value={pendingGroup}
             options={MUSCLE_GROUP_OPTIONS}
             placeholder="Выберите группу"
             onChange={(mg) => setPendingGroup(mg)}
           />
-        </div>
+        </Field>
 
         {hasCustomExercises && (
           <label className="filters__checkbox-row">
@@ -57,7 +59,7 @@ export function FiltersPanel({ muscleGroup, onlyCustom, hasCustomExercises, onAp
         )}
       </div>
 
-      <div className="filters__actions">
+      <ScreenFooter>
         <Button variant="filled" flex onClick={() => onApply(pendingGroup, pendingCustom)}>
           Показать
         </Button>
@@ -68,7 +70,7 @@ export function FiltersPanel({ muscleGroup, onlyCustom, hasCustomExercises, onAp
         >
           Сбросить
         </Button>
-      </div>
-    </div>
+      </ScreenFooter>
+    </Screen>
   );
 }

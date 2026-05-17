@@ -1,0 +1,13 @@
+.dashboard {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard__notice {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  line-height: 1.5;
+  color: var(--text-muted);
+}

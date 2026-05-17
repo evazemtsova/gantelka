@@ -1,0 +1,15 @@
+.screen {
+  padding: var(--screen-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-9);
+  min-height: 100%;
+}
+
+.screen--with-footer {
+  justify-content: space-between;
+}
+
+.screen--no-padding {
+  padding: 0;
+}

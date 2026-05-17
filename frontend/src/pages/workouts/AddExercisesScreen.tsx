@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import type { Exercise } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { ScreenFooter } from '../../components/ui/ScreenFooter';
 import { Button } from '../../components/ui/Button';
+import { SearchField } from '../../components/ui/SearchField';
 import { CheckboxRow } from '../../components/ui/CheckboxRow';
-import { SearchIcon, CloseIcon } from '../../components/ui/icons';
 import { useExercises } from '../../store/WorkoutsContext';
 import { exerciseMeta } from '../../constants/labels';
 import './Workouts.css';
@@ -17,9 +19,6 @@ export function AddExercisesScreen({ onBack, onSave }: AddExercisesScreenProps) 
   const pool = useExercises();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const trimmed = query.trim();
   const results = trimmed
@@ -41,30 +40,15 @@ export function AddExercisesScreen({ onBack, onSave }: AddExercisesScreenProps) 
   }
 
   return (
-    <div className="add-exercises">
+    <Screen withFooter>
       <div className="add-exercises__top">
         <ScreenHeader title="добавить упр." onBack={onBack} />
 
-        <div className="add-exercises__search">
-          <SearchIcon />
-          <input
-            ref={inputRef}
-            className="add-exercises__input"
-            type="text"
-            placeholder="жим лежа"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-          />
-          {query && (
-            <button
-              className="add-exercises__clear"
-              onClick={() => setQuery('')}
-              aria-label="Очистить"
-            >
-              <CloseIcon />
-            </button>
-          )}
-        </div>
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          placeholder="жим лежа"
+        />
 
         {trimmed && (
           <div className="add-exercises__results">
@@ -84,9 +68,11 @@ export function AddExercisesScreen({ onBack, onSave }: AddExercisesScreenProps) 
         )}
       </div>
 
-      <Button variant="filled" fullWidth onClick={handleSave}>
-        сохранить изменения
-      </Button>
-    </div>
+      <ScreenFooter>
+        <Button variant="filled" fullWidth onClick={handleSave}>
+          сохранить изменения
+        </Button>
+      </ScreenFooter>
+    </Screen>
   );
 }

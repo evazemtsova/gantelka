@@ -1,41 +1,18 @@
-.exercise-info {
-  padding: var(--screen-padding);
+.exercise-info__content {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  min-height: 100%;
-  background: var(--bg);
+  gap: var(--s-9);
 }
 
 .exercise-info__fields {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-}
-
-.exercise-info__field {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.exercise-info__label {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.exercise-info__label--muted {
-  color: var(--text-muted);
+  gap: var(--s-9);
 }
 
 .exercise-info__value {
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--text-body);
   font-weight: 500;
   line-height: 20px;
   text-transform: uppercase;

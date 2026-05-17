@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import type { Exercise, ExerciseType, MuscleGroup } from '../../types';
 import { MUSCLE_LABELS_CAP, SELECTABLE_MUSCLE_GROUPS } from '../../constants/labels';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { ScreenFooter } from '../../components/ui/ScreenFooter';
+import { Field } from '../../components/ui/Field';
+import { TextField } from '../../components/ui/TextField';
+import { Chip } from '../../components/ui/Chip';
 import { Dropdown } from '../../components/ui/Dropdown';
 import { Button } from '../../components/ui/Button';
-import './CreateExercise.css';
+import './Exercises.css';
 
 const MUSCLE_GROUP_OPTIONS = SELECTABLE_MUSCLE_GROUPS.map((mg) => ({
   value: mg,
@@ -55,98 +60,82 @@ export default function CreateExercise({ onBack, onSave, initialExercise }: Prop
     });
   }
 
+  const TYPE_LABELS: Record<ExerciseType, string> = {
+    strength: 'Силовое',
+    cardio: 'Кардио',
+    stretching: 'Растяжка',
+  };
+
   return (
-    <div className="create">
-      <div className="create__content">
+    <Screen withFooter>
+      <div className="create-exercise__content">
         <ScreenHeader title={initialExercise ? 'Изменить' : 'Создать'} onBack={onBack} />
 
-        {/* Name */}
-        <div className="create__field">
-          <span className="create__label">Название</span>
-          <input
-            className="create__input"
-            type="text"
-            placeholder="например: жим лежа"
+        <Field label="Название">
+          <TextField
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={setName}
+            placeholder="например: жим лежа"
           />
-        </div>
+        </Field>
 
-        {/* Exercise type */}
-        <div className="create__field">
-          <span className="create__label">Тип упражнения</span>
-          <div className="create__toggles">
-            {(['strength', 'cardio', 'stretching'] as ExerciseType[]).map((t) => {
-              const labels: Record<ExerciseType, string> = {
-                strength: 'Силовое',
-                cardio: 'Кардио',
-                stretching: 'Растяжка',
-              };
-              return (
-                <button
-                  key={t}
-                  className={`create__toggle${type === t ? ' create__toggle--selected' : ''}`}
-                  onClick={() => handleTypeSelect(t)}
-                >
-                  {labels[t]}
-                </button>
-              );
-            })}
+        <Field label="Тип упражнения">
+          <div className="chips-row">
+            {(['strength', 'cardio', 'stretching'] as ExerciseType[]).map((t) => (
+              <Chip
+                key={t}
+                selected={type === t}
+                onClick={() => handleTypeSelect(t)}
+              >
+                {TYPE_LABELS[t]}
+              </Chip>
+            ))}
           </div>
-        </div>
+        </Field>
 
-        {/* Muscle group — only for strength */}
         {type === 'strength' && (
-          <div className="create__field">
-            <span className="create__label">Группа мышц</span>
+          <Field label="Группа мышц">
             <Dropdown
               value={muscleGroup}
               options={MUSCLE_GROUP_OPTIONS}
               placeholder="Выберите группу"
               onChange={(mg) => setMuscleGroup(mg)}
             />
-          </div>
+          </Field>
         )}
 
-        {/* Params */}
         {type && (
-          <div className="create__field">
-            <span className="create__label">Параметры для расчётов</span>
-            <div className="create__toggles">
+          <Field label="Параметры для расчётов">
+            <div className="chips-row">
               {TYPE_PARAMS[type].map((param) => (
-                <button
+                <Chip
                   key={param}
-                  className={`create__toggle${selectedParams.includes(param) ? ' create__toggle--selected' : ''}`}
+                  selected={selectedParams.includes(param)}
                   onClick={() => toggleParam(param)}
                 >
                   {param}
-                </button>
+                </Chip>
               ))}
             </div>
-          </div>
+          </Field>
         )}
 
-        {/* Description */}
         {type && (
-          <div className="create__field">
-            <span className="create__label create__label--optional">
-              Описание <span>(необязательно)</span>
-            </span>
-            <textarea
-              className="create__textarea"
-              placeholder="заметки, техника выполнения"
+          <Field label="Описание" optional="необязательно">
+            <TextField
+              multiline
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={setDescription}
+              placeholder="заметки, техника выполнения"
             />
-          </div>
+          </Field>
         )}
       </div>
 
-      {/* Actions */}
-      <div className="create__actions">
+      <ScreenFooter>
         <Button variant="filled" flex onClick={handleSave}>Сохранить</Button>
         <Button variant="outlined" flex onClick={onBack}>Отменить</Button>
-      </div>
-    </div>
+      </ScreenFooter>
+    </Screen>
   );
 }

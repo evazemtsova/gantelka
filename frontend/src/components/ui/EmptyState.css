@@ -1,0 +1,7 @@
+.empty-state {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}

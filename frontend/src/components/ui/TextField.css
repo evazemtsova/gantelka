@@ -1,0 +1,31 @@
+.text-field {
+  /* surface base */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 var(--s-4);
+  outline: none;
+
+  font-family: var(--font-sans);
+  font-size: var(--text-input);
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.text-field--multiline {
+  height: 106px;
+  padding: var(--s-3) var(--s-4);
+  resize: none;
+}
+
+.text-field:focus {
+  border-color: var(--accent-dark);
+}
+
+.text-field::placeholder {
+  color: var(--text-muted);
+}

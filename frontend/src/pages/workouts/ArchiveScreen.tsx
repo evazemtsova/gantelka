@@ -1,6 +1,8 @@
 import type { Workout } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { ListItem } from '../../components/ui/ListItem';
+import { EmptyState } from '../../components/ui/EmptyState';
 import './Workouts.css';
 
 export interface ArchiveScreenProps {
@@ -11,11 +13,11 @@ export interface ArchiveScreenProps {
 
 export function ArchiveScreen({ workouts, onBack, onSelectWorkout }: ArchiveScreenProps) {
   return (
-    <div className="workouts-archive">
+    <Screen>
       <ScreenHeader title="архив" onBack={onBack} />
 
       {workouts.length === 0 ? (
-        <p className="workouts-archive__empty">архив пуст</p>
+        <EmptyState>архив пуст</EmptyState>
       ) : (
         <ul className="workouts-archive__list">
           {workouts.map(w => (
@@ -28,6 +30,6 @@ export function ArchiveScreen({ workouts, onBack, onSelectWorkout }: ArchiveScre
           ))}
         </ul>
       )}
-    </div>
+    </Screen>
   );
 }

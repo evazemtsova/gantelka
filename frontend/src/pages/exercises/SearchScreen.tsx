@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import type { Exercise } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { SearchField } from '../../components/ui/SearchField';
 import { ListItem } from '../../components/ui/ListItem';
-import { SearchIcon, CloseIcon } from '../../components/ui/icons';
 import { EXERCISE_TYPE_LABELS, MUSCLE_LABELS_CAP } from '../../constants/labels';
 import './Exercises.css';
 
@@ -14,34 +15,20 @@ export interface SearchScreenProps {
 
 export function SearchScreen({ exercises, onBack, onSelectExercise }: SearchScreenProps) {
   const [query, setQuery] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const results = query.trim()
     ? exercises.filter((ex) => ex.name.toLowerCase().includes(query.toLowerCase()))
     : [];
 
   return (
-    <div className="search-screen">
+    <Screen>
       <ScreenHeader title="Найти" onBack={onBack} />
 
-      <div className="search-screen__input-wrap">
-        <SearchIcon />
-        <input
-          ref={inputRef}
-          className="search-screen__input"
-          type="text"
-          placeholder="жим лежа"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        {query && (
-          <button className="search-screen__clear" onClick={() => setQuery('')} aria-label="Очистить">
-            <CloseIcon />
-          </button>
-        )}
-      </div>
+      <SearchField
+        value={query}
+        onChange={setQuery}
+        placeholder="жим лежа"
+      />
 
       {query.trim() && (
         <div className="search-screen__results">
@@ -63,6 +50,6 @@ export function SearchScreen({ exercises, onBack, onSelectExercise }: SearchScre
           </ul>
         </div>
       )}
-    </div>
+    </Screen>
   );
 }

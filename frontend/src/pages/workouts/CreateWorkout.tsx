@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import type { Exercise, Workout } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { ScreenFooter } from '../../components/ui/ScreenFooter';
+import { Field } from '../../components/ui/Field';
+import { TextField } from '../../components/ui/TextField';
 import { Button } from '../../components/ui/Button';
 import { SortableItem } from '../../components/ui/SortableItem';
 import { PlusIcon } from '../../components/ui/icons';
@@ -71,23 +75,19 @@ export function CreateWorkoutScreen({ initial, onBack, onSave }: CreateWorkoutSc
   }
 
   return (
-    <div className="create-workout">
+    <Screen withFooter>
       <div className="create-workout__content">
         <ScreenHeader title="создать" onBack={onBack} />
 
-        <div className="create-workout__field">
-          <span className="create-workout__label">название</span>
-          <input
-            className="create-workout__input"
-            type="text"
-            placeholder="день ног ягодицы"
+        <Field label="название">
+          <TextField
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={setName}
+            placeholder="день ног ягодицы"
           />
-        </div>
+        </Field>
 
-        <div className="create-workout__field">
-          <span className="create-workout__label">упражнения</span>
+        <Field label="упражнения">
           {items.length > 0 && (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={items.map(item => item.dndId)} strategy={verticalListSortingStrategy}>
@@ -113,10 +113,10 @@ export function CreateWorkoutScreen({ initial, onBack, onSave }: CreateWorkoutSc
           >
             добавить упражнение
           </Button>
-        </div>
+        </Field>
       </div>
 
-      <div className="create-workout__actions">
+      <ScreenFooter>
         <Button
           variant="filled"
           flex
@@ -134,7 +134,7 @@ export function CreateWorkoutScreen({ initial, onBack, onSave }: CreateWorkoutSc
         <Button variant="outlined" flex onClick={onBack}>
           отменить
         </Button>
-      </div>
-    </div>
+      </ScreenFooter>
+    </Screen>
   );
 }

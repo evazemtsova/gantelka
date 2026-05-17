@@ -1,135 +1,37 @@
-.exercises {
-  padding: 36px 24px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
+/* ─── Main exercise list ─────────────────────────────────────────────────── */
 
-.exercises__title {
-  font-family: var(--font-mono);
-  font-size: 40px;
-  font-weight: 400;
-  line-height: 48px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-/* Toolbar: search + filter + add */
 .exercises__toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-2);
 }
 
-.exercises__search {
+.exercises__toolbar .search-field {
   flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  height: var(--input-height);
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  text-align: left;
-}
-
-.exercises__search-icon {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  color: var(--text-muted);
-}
-
-.exercises__search-placeholder {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.exercises__btn {
-  width: 54px;
-  height: var(--input-height);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-}
-
-.exercises__btn--add {
-  background: var(--accent);
-}
-
-.exercises__btn--active-filter {
-  background: #e4e2e2;
-}
-
-.exercises__btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* List section */
-.exercises__section-title {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text);
-  margin-bottom: 25px;
+  min-width: 0;
 }
 
 .exercises__list {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
   list-style: none;
 }
 
-/* ─── Filters panel ─── */
-.filters {
-  padding: var(--screen-padding);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  min-height: 0;
+.exercises__section-title {
+  margin-bottom: var(--s-7);
 }
+
+/* ─── Filters panel ─── */
 
 .filters__content {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: var(--s-9);
 }
 
-.filters__field {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.filters__label {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-/* Checkbox row */
+/* Custom checkbox row for filters (uses label element, not CheckboxRow component) */
 .filters__checkbox-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-3);
   cursor: pointer;
 }
 
@@ -144,9 +46,10 @@
   width: 24px;
   height: 22px;
   flex-shrink: 0;
-  background: #fff;
+  /* surface--sm-shadow */
+  background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,84 +62,24 @@
 
 .filters__checkbox-label {
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--text-body);
   font-weight: 500;
   text-transform: uppercase;
   color: var(--text);
   white-space: nowrap;
 }
 
-/* Action buttons */
-.filters__actions {
-  display: flex;
-  gap: 10px;
-}
-
 /* ─── Search screen ─── */
-.search-screen {
-  padding: var(--screen-padding);
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  min-height: 100%;
-}
-
-.search-screen__input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  height: var(--input-height);
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-}
-
-.search-screen__input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.search-screen__input::placeholder {
-  color: var(--text-muted);
-}
-
-.search-screen__clear {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text);
-}
-
-.search-screen__clear svg {
-  width: 18px;
-  height: 18px;
-}
 
 .search-screen__results {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: var(--s-7);
 }
 
 .search-screen__count {
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--text-body);
   font-weight: 500;
   line-height: 20px;
   text-transform: uppercase;
@@ -244,37 +87,15 @@
 }
 
 .search-screen__list {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
   list-style: none;
 }
 
-/* ─── Exercise detail ─── */
-.exercise-detail {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-.exercise-detail .exercise-info {
-  flex: 1;
-}
-
 /* ─── Add to workout screen ─── */
-.add-to-workout {
-  padding: var(--screen-padding);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100%;
-  gap: 25px;
-}
 
 .add-to-workout__top {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: var(--s-7);
 }
 
 .add-to-workout__list {
@@ -287,32 +108,27 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 30px;
+  gap: var(--s-9);
   text-align: center;
 }
 
 .add-to-workout__promo {
-  font-family: var(--font-mono);
-  font-size: 60px;
-  font-weight: 400;
   line-height: 51px;
-  text-transform: uppercase;
-  color: var(--text);
 }
 
 .add-to-workout__desc {
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--text-body);
   font-weight: 400;
   line-height: 27.5px;
   color: var(--text);
 }
 
-/* Bottom actions */
-.exercise-detail__actions {
+/* ─── Create exercise content ─── */
+
+.create-exercise__content {
   display: flex;
-  gap: 10px;
-  align-items: stretch;
-  padding: 0 24px 24px;
+  flex-direction: column;
+  gap: var(--s-7);
 }
 

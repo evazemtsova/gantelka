@@ -34,8 +34,14 @@
 ### 5. Локализованные строки в `frontend/src/constants/labels.ts`
 `MUSCLE_LABELS_CAP`, `MUSCLE_LABELS_LOWER`, `EXERCISE_TYPE_LABELS`, `EXERCISE_PARAMS_LABELS`, `SELECTABLE_MUSCLE_GROUPS`, хелпер `exerciseMeta(ex)`. Никаких локальных словарей в компонентах.
 
-### 6. Дизайн-токены в `:root`
-[src/components/Layout.css](../frontend/src/components/Layout.css) объявляет все цвета, шрифты, размеры, тени как CSS-переменные. Хардкод цвета `#abd600` в CSS — это баг, заменять на `var(--accent-dark)`.
+### 6. Дизайн-система — токены и примитивы
+CSS-переменные `:root` — единственное место для значений. Структура:
+
+- [src/styles/tokens.css](../frontend/src/styles/tokens.css) — все цвета, шрифты, размеры, отступы, тени
+- [src/styles/typography.css](../frontend/src/styles/typography.css) — классы `.t-display` / `.t-h1` / `.t-h2` / `.t-body` / `.t-body-strong` / `.t-input` / `.t-caption`
+- [src/styles/utilities.css](../frontend/src/styles/utilities.css) — `.surface`, `.surface--sm-shadow`, `.divided-row`, `.chips-row`
+
+Хардкод цвета `#abd600` / `#d8ff3b` в CSS — баг. Исключение: SVG `fill` в `LogoFull` в `icons.tsx` (задокументировано).
 
 ## Структура файлов
 
@@ -49,8 +55,12 @@ frontend/                      — React-приложение
   public/
   src/
     App.tsx                    — просто <Layout/>
-    main.tsx                   — root + WorkoutsProvider
-    index.css                  — global reset, body
+    main.tsx                   — root + WorkoutsProvider + глобальные стили
+    index.css                  — box-sizing reset + #root height
+    styles/
+      tokens.css               — все CSS-переменные (:root)
+      typography.css           — .t-* классы
+      utilities.css            — .surface, .divided-row, .chips-row
     types/index.ts             — Exercise, Workout, WorkoutSet, ...
     data/
       exercises.ts             — SEED_EXERCISES, SEED_WORKOUTS
@@ -59,8 +69,10 @@ frontend/                      — React-приложение
     store/
       WorkoutsContext.tsx      — useReducer + provider + селекторы
     components/
-      Layout.tsx / Layout.css  — навигация, нижний нав-бар, :root токены
+      Layout.tsx / Layout.css  — навигация, нижний нав-бар
       ui/                      — переиспользуемые UI-примитивы
+        Screen / ScreenFooter / Field
+        TextField / SearchField / Chip / EmptyState
         Button / ListItem / ScreenHeader / CheckboxRow /
         SortableItem / Dropdown / ExerciseInfo / icons
     pages/
@@ -127,7 +139,7 @@ Profile ─▶ "выйти" ─▶ supabase.auth.signOut ─▶ Login
 - Нет деструктивных подтверждений (back во время сессии теряет введённые подходы)
 - Нет offline-кеша (PWA пока без service worker)
 - Подходы в сессии — string, не валидируются на число
-- SVG-иконки в Layout.tsx с хардкодом цвета `#ABD600` (inline SVG не подхватывает CSS-переменные)
+- `LogoFull` SVG в `icons.tsx` содержит хардкод `fill="#D8FF3B"` (допустимо: `currentColor` не работает для fill отдельных путей многоцветного SVG)
 
 ## Что готово для бэка
 

@@ -6,6 +6,21 @@
 
 ## 2026-05-17
 
+### 23:10 — Fix: визуальная полировка после миграции на дизайн-систему
+- `SearchField` в toolbar `Exercises` растягивается на всю свободную ширину (`flex: 1` на `.exercises__toolbar .search-field`) — после миграции схлопывался до контента
+- `ListItem` получил симметричный вертикальный padding (12px сверху/снизу): текст теперь по центру между разделителями, а не прижат к нижней линии
+- `ExerciseDetail` отрефакторен — кнопки рендерятся как `<ScreenFooter>` внутри Screen `ExerciseInfo` (новый проп `footer`). Старый `.exercise-detail` + `.exercise-detail__actions` со своим padding'ом убран — устранена двойная вложенность Screen'ов
+- `ScreenFooter` получил `width: 100%` (надёжность вместо неявного flex stretch)
+- Текст кнопки «добавить в тренировку» → «в тренировку»: на 375px-вьюпорте старый текст вместе с iconOnly давал min-content 381px и выдавливал контейнер за правый край screen padding
+
+### 22:30 — Feat: миграция на дизайн-систему (Этапы 1–7)
+- Новые файлы: `src/styles/tokens.css` (все CSS-токены в `:root`), `typography.css` (классы `.t-display` / `.t-h1` / `.t-h2` / `.t-body` / `.t-caption`), `utilities.css` (`.surface`, `.divided-row`, `.chips-row`)
+- Новые UI-примитивы: `Screen`, `ScreenFooter`, `Field`, `TextField` (с `multiline`), `SearchField` (trigger + full режимы), `Chip`, `EmptyState`
+- Обновлены существующие: `Button` (добавлены `size="lg"`, `active`, `iconOnly`), `ListItem`, `CheckboxRow`, `SortableItem`, `Dropdown`, `ScreenHeader`, `ExerciseInfo` — всё через токены, 0 хардкода
+- `LogoFull` переехал в `icons.tsx` как единый source of truth
+- Все страницы (`Home`, `Login`, `Dashboard`, `Workouts*`, `WorkoutSession`, `Exercises*`) мигрированы на примитивы: 0 `style={{`, 0 хардкода цветов/размеров вне SVG-исключения
+- tsc + build зелёные
+
 ### 21:45 — Fix: ID новой тренировки → crypto.randomUUID()
 В `CreateWorkout` id создаваемой тренировки генерился как `String(Date.now())` — БД отказывала с `invalid input syntax for type uuid`. Заменено на `crypto.randomUUID()` (как уже было в `Exercises` для упражнений).
 

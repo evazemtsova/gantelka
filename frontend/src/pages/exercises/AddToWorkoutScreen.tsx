@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { Exercise, Workout } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { ScreenFooter } from '../../components/ui/ScreenFooter';
 import { Button } from '../../components/ui/Button';
 import { CheckboxRow } from '../../components/ui/CheckboxRow';
 import { useWorkouts } from '../../store/WorkoutsContext';
@@ -37,38 +39,42 @@ export function AddToWorkoutScreen({ workouts, exercise, onBack, onBackToList }:
 
   if (view === 'no-workouts') {
     return (
-      <div className="add-to-workout">
+      <Screen withFooter>
         <ScreenHeader title="" onBack={onBack} />
         <div className="add-to-workout__center">
-          <p className="add-to-workout__promo">нет тренировок</p>
+          <p className="add-to-workout__promo t-display">нет тренировок</p>
           <p className="add-to-workout__desc">
             у вас пока не создано ни одной тренировки, можете создать новую и добавить туда упражнение
           </p>
         </div>
-        <Button variant="filled" fullWidth onClick={onBack}>
-          создать тренировку
-        </Button>
-      </div>
+        <ScreenFooter>
+          <Button variant="filled" fullWidth onClick={onBack}>
+            создать тренировку
+          </Button>
+        </ScreenFooter>
+      </Screen>
     );
   }
 
   if (view === 'added') {
     return (
-      <div className="add-to-workout">
+      <Screen withFooter>
         <ScreenHeader title="" onBack={onBack} />
         <div className="add-to-workout__center">
-          <p className="add-to-workout__promo">добавлено</p>
+          <p className="add-to-workout__promo t-display">добавлено</p>
           <p className="add-to-workout__desc">упражнение добавлено в тренировку</p>
         </div>
-        <Button variant="outlined" fullWidth onClick={onBackToList}>
-          вернуться в упражнения
-        </Button>
-      </div>
+        <ScreenFooter>
+          <Button variant="outlined" fullWidth onClick={onBackToList}>
+            вернуться в упражнения
+          </Button>
+        </ScreenFooter>
+      </Screen>
     );
   }
 
   return (
-    <div className="add-to-workout">
+    <Screen withFooter>
       <div className="add-to-workout__top">
         <ScreenHeader title="добавить в" onBack={onBack} />
         <ul className="add-to-workout__list">
@@ -83,9 +89,11 @@ export function AddToWorkoutScreen({ workouts, exercise, onBack, onBackToList }:
           ))}
         </ul>
       </div>
-      <Button variant="filled" fullWidth onClick={handleSave}>
-        сохранить изменения
-      </Button>
-    </div>
+      <ScreenFooter>
+        <Button variant="filled" fullWidth onClick={handleSave}>
+          сохранить изменения
+        </Button>
+      </ScreenFooter>
+    </Screen>
   );
 }

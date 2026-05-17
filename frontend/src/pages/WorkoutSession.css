@@ -11,14 +11,14 @@
   padding: var(--screen-padding);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: var(--s-8);
 }
 
 .session__list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: var(--s-8);
 }
 
 /* ── exercise row (collapsed & expanded header) ── */
@@ -26,14 +26,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-4);
   cursor: pointer;
   min-width: 0;
 }
 
 .session__ex-name {
   font-family: var(--font-sans);
-  font-size: 18px;
+  font-size: var(--text-body-sm);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -52,22 +52,23 @@
 .session__expanded {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--s-5);
 }
 
 /* ── sets ── */
 .session__sets {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--s-4);
 }
 
 .session__set {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s-4);
 }
 
+/* 28px mono — documented exception, not in typography scale */
 .session__set-num {
   font-family: var(--font-mono);
   font-size: 28px;
@@ -77,109 +78,27 @@
   text-align: center;
 }
 
-.session__input {
-  flex: 1;
-  min-width: 0;
-  height: var(--input-height);
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  padding: 0 14px;
-  font-family: var(--font-sans);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text);
-  text-transform: uppercase;
-  outline: none;
-}
-
-.session__input::placeholder {
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.session__input:focus {
-  border-color: var(--accent-dark);
-}
-
 /* ── actions row ── */
 .session__actions {
   display: flex;
-  gap: 12px;
+  gap: var(--s-4);
   align-items: center;
-}
-
-.session__icon-btn,
-.session__add-set,
-.session__done {
-  height: var(--input-height);
-  background: #fff;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 500;
-  text-transform: uppercase;
-  color: var(--text);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.session__icon-btn {
-  width: var(--input-height);
-  flex-shrink: 0;
-  padding: 0;
-}
-
-.session__add-set {
-  flex: 1;
-  padding: 0 14px;
-  white-space: nowrap;
-}
-
-.session__done {
-  background: var(--accent);
-  padding: 0 24px;
-  min-width: 110px;
-}
-
-.session__done--active {
-  background: var(--accent-dark);
 }
 
 /* ── date step ── */
-.session__date-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.session__field-label {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
 .session__date-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s-4);
 }
 
+/* Date input inherits .text-field base but overrides text-transform */
 .session__input--date {
   flex: 1;
   text-transform: none;
-  font-family: var(--font-sans);
-  /* native date picker opens на tap по полю */
 }
 
-/* iOS/Safari: убрать дефолтные стрелки у calendar-picker и сделать вид как у текстового инпута */
+/* iOS/Safari: убрать дефолтные стрелки у calendar-picker */
 .session__input--date::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.7;
@@ -193,22 +112,17 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 24px;
-  padding: 0 24px;
+  gap: var(--s-7);
+  padding: 0 var(--s-7);
 }
 
 .session__success-title {
-  font-family: var(--font-mono);
-  font-size: 60px;
-  font-weight: 400;
   line-height: 1;
-  text-transform: uppercase;
-  color: var(--text);
 }
 
 .session__success-text {
   font-family: var(--font-sans);
-  font-size: 18px;
+  font-size: var(--text-body-sm);
   font-weight: 400;
   line-height: 1.5;
   color: var(--text);
@@ -217,11 +131,11 @@
 /* ── footer (sticky CTA) ── */
 .session__footer {
   flex-shrink: 0;
-  padding: 16px 24px 24px;
+  padding: var(--s-5) var(--s-7) var(--s-7);
   background: var(--bg);
 }
 
 .session__footer--row {
   display: flex;
-  gap: 12px;
+  gap: var(--s-4);
 }

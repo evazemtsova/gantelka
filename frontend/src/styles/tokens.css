@@ -1,0 +1,54 @@
+:root {
+  /* ─── Palette ─────────────────────────────────────────────────────────────── */
+  --accent:          #d8ff3b;
+  --accent-dark:     #abd600;
+
+  --bg:              #fbf9f8;
+  --bg-dark:         #0f0f0f;
+
+  --surface:         #ffffff;
+  --surface-active:  #e4e2e2;
+  --surface-hover:   #f5f5f5;
+
+  /* ─── Text ────────────────────────────────────────────────────────────────── */
+  --text:            #000000;
+  --text-inverse:    #ffffff;
+  --text-muted:      #c6c6c6;
+
+  /* ─── Lines / Borders ────────────────────────────────────────────────────── */
+  --border:          #000000;
+  --divider:         #c6c6c6;
+
+  /* ─── Typography ─────────────────────────────────────────────────────────── */
+  --font-mono:  'Anonymous Pro', monospace;
+  --font-sans:  'Manrope', system-ui, sans-serif;
+
+  --text-display-lg: 60px;
+  --text-display-md: 56px;
+  --text-h1:         40px;
+  --text-h2:         20px;
+  --text-body:       20px;
+  --text-body-sm:    18px;
+  --text-input:      18px;
+  --text-caption:    12px;
+
+  /* ─── Spacing scale ──────────────────────────────────────────────────────── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 10px;
+  --s-4: 12px;
+  --s-5: 16px;
+  --s-6: 20px;
+  --s-7: 24px;
+  --s-8: 28px;
+  --s-9: 30px;
+
+  /* ─── Sizing ──────────────────────────────────────────────────────────────── */
+  --nav-height:      65px;
+  --input-height:    50px;
+  --screen-padding:  36px 24px 24px;
+
+  /* ─── Effects ────────────────────────────────────────────────────────────── */
+  --shadow:    4px 4px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-sm: 2px 2px 2px 0 rgba(0, 0, 0, 0.25);
+}

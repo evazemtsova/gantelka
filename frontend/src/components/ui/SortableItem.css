@@ -1,9 +1,9 @@
 .sortable-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--text-muted);
+  gap: var(--s-4);
+  padding: var(--s-4) 0;
+  border-bottom: 1px solid var(--divider);
 }
 
 .sortable-item:first-child { padding-top: 0; }
@@ -34,7 +34,7 @@
 
 .sortable-item__name {
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--text-body);
   font-weight: 400;
   line-height: 27.5px;
   color: var(--text);
@@ -42,12 +42,12 @@
 
 .sortable-item__meta {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: var(--text-caption);
   font-weight: 500;
   line-height: 16px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--text);
+  color: var(--text-muted);
 }
 
 .sortable-item__remove {

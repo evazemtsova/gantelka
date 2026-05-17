@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import type { Exercise, MuscleGroup } from '../../types';
 import CreateExercise from './CreateExercise';
+import { Screen } from '../../components/ui/Screen';
 import { ListItem } from '../../components/ui/ListItem';
+import { SearchField } from '../../components/ui/SearchField';
+import { Button } from '../../components/ui/Button';
 import { AddToWorkoutScreen } from './AddToWorkoutScreen';
 import { SearchScreen } from './SearchScreen';
 import { ExerciseDetail } from './ExerciseDetail';
@@ -16,7 +19,6 @@ import {
   MUSCLE_LABELS_CAP,
 } from '../../constants/labels';
 import {
-  SearchIcon,
   FilterIcon,
   PlusIcon,
 } from '../../components/ui/icons';
@@ -135,36 +137,34 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
   }
 
   return (
-    <div className="exercises">
-      <h1 className="exercises__title">Упражнения</h1>
+    <Screen>
+      <h1 className="t-h1">Упражнения</h1>
 
       <div className="exercises__toolbar">
-        <button
-          className="exercises__search"
+        <SearchField
           onClick={() => { setShowSearch(true); onShowSubPage(); }}
-          aria-label="Поиск упражнений"
-        >
-          <SearchIcon className="exercises__search-icon" />
-          <span className="exercises__search-placeholder">поиск</span>
-        </button>
-        <button
-          className={`exercises__btn${hasActiveFilters ? ' exercises__btn--active-filter' : ''}`}
+          placeholder="поиск"
+        />
+        <Button
+          iconOnly
+          variant={hasActiveFilters ? 'filled' : 'outlined'}
           aria-label="Фильтры"
           onClick={() => { setShowFilters(true); onShowSubPage(); }}
         >
           <FilterIcon />
-        </button>
-        <button
-          className="exercises__btn exercises__btn--add"
+        </Button>
+        <Button
+          iconOnly
+          variant="filled"
           aria-label="Добавить упражнение"
           onClick={() => { setShowCreate(true); onShowSubPage(); }}
         >
           <PlusIcon />
-        </button>
+        </Button>
       </div>
 
       <div>
-        <p className="exercises__section-title">
+        <p className="t-h2 exercises__section-title">
           {muscleGroupFilter
             ? `${MUSCLE_LABELS_CAP[muscleGroupFilter]} (${filtered.length})`
             : `Все упражнения (${exercises.length})`}
@@ -187,6 +187,6 @@ export default function Exercises({ onShowSubPage, onHideSubPage }: ExercisesPro
           })}
         </ul>
       </div>
-    </div>
+    </Screen>
   );
 }

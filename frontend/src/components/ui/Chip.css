@@ -1,0 +1,23 @@
+.chip {
+  /* surface base */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+
+  height: var(--input-height);
+  padding: 0 var(--s-4);
+  cursor: pointer;
+
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+
+.chip--selected {
+  background: var(--surface-active);
+}

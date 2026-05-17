@@ -1,7 +1,7 @@
 .screen-header {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: var(--s-3);
   flex-shrink: 0;
 }
 
@@ -19,12 +19,6 @@
 }
 
 .screen-header__title {
-  font-family: var(--font-mono);
-  font-size: 40px;
-  font-weight: 400;
-  line-height: 48px;
-  text-transform: uppercase;
-  color: var(--text);
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;

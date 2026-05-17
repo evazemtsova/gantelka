@@ -3,13 +3,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 10px;
+  gap: var(--s-2);
+  padding: 0 var(--s-3);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   cursor: pointer;
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--text-body);
   font-weight: 500;
   line-height: 20px;
   text-transform: uppercase;
@@ -18,18 +18,28 @@
 }
 
 .btn--filled  { background: var(--accent); }
-.btn--outlined { background: #fff; }
+.btn--outlined { background: var(--surface); }
 
-.btn--filled.btn--disabled { background: var(--accent-dark); cursor: not-allowed; }
+/* active state — filled variant shows accent-dark (e.g. done-button in session) */
+.btn--filled.btn--active { background: var(--accent-dark); }
+
+.btn--filled.btn--disabled  { background: var(--accent-dark); cursor: not-allowed; }
 .btn--outlined.btn--disabled { color: var(--text-muted); cursor: not-allowed; }
 
 .btn--flex       { flex: 1; }
 .btn--full-width { width: 100%; }
 
+/* lg — 64px height for hero/primary CTA (login, start-session) */
+.btn--lg { height: 64px; }
+
 .btn--icon-only {
-  width: 50px;
+  width: var(--input-height);
   flex-shrink: 0;
   padding: 0;
+}
+
+.btn--icon-only.btn--lg {
+  width: 64px;
 }
 
 .btn__icon {

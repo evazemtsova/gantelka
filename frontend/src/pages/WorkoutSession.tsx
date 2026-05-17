@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { WorkoutSet } from '../types';
 import { ScreenHeader } from '../components/ui/ScreenHeader';
 import { Button } from '../components/ui/Button';
+import { TextField } from '../components/ui/TextField';
+import { Field } from '../components/ui/Field';
 import { Dropdown } from '../components/ui/Dropdown';
 import { ExerciseInfo } from '../components/ui/ExerciseInfo';
 import {
@@ -76,36 +78,34 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
         <div className="session__scroll">
           <ScreenHeader title={workout.name} onBack={() => setStep('session')} />
 
-          <div className="session__date-section">
-            <span className="session__field-label">следующая тренировка</span>
+          <Field label="следующая тренировка">
             <Dropdown
               value={nextWorkoutId}
               options={workoutOptions}
               placeholder="выбери тренировку"
               onChange={(id) => setNextWorkoutId(id)}
             />
-          </div>
+          </Field>
 
-          <div className="session__date-section">
-            <span className="session__field-label">дата следующей тренировки</span>
+          <Field label="дата следующей тренировки">
             <div className="session__date-row">
               <input
-                className="session__input session__input--date"
+                className="text-field session__input--date"
                 type="date"
                 value={nextDate}
                 onChange={(e) => setNextDate(e.target.value)}
               />
               {nextDate && (
-                <button
-                  className="session__icon-btn"
+                <Button
+                  iconOnly
                   onClick={() => setNextDate('')}
                   aria-label="Очистить дату"
                 >
                   <TrashIcon />
-                </button>
+                </Button>
               )}
             </div>
-          </div>
+          </Field>
         </div>
         <div className="session__footer">
           <Button
@@ -127,7 +127,7 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
         <div className="session__scroll">
           <ScreenHeader onBack={() => setStep('date')} />
           <div className="session__success">
-            <h1 className="session__success-title">ура!</h1>
+            <h1 className="session__success-title t-display">ура!</h1>
             <p className="session__success-text">
               Тренировка завершена.
               <br />
@@ -233,55 +233,47 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
                   {sets.map((set, i) => (
                     <div key={set.id} className="session__set">
                       <span className="session__set-num">{i + 1}</span>
-                      <input
-                        className="session__input"
-                        placeholder="раз"
+                      <TextField
                         value={set.reps}
+                        placeholder="раз"
                         inputMode="numeric"
-                        onChange={(e) =>
-                          updateSet(ex.id, set.id, 'reps', e.target.value)
-                        }
+                        onChange={(v) => updateSet(ex.id, set.id, 'reps', v)}
                       />
-                      <input
-                        className="session__input"
-                        placeholder="кг"
+                      <TextField
                         value={set.weight}
+                        placeholder="кг"
                         inputMode="decimal"
-                        onChange={(e) =>
-                          updateSet(ex.id, set.id, 'weight', e.target.value)
-                        }
+                        onChange={(v) => updateSet(ex.id, set.id, 'weight', v)}
                       />
-                      <button
-                        className="session__icon-btn"
+                      <Button
+                        iconOnly
                         onClick={() => removeSet(ex.id, set.id)}
                         aria-label="Удалить подход"
                       >
                         <TrashIcon />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
 
                 <div className="session__actions">
-                  <button
-                    className="session__icon-btn"
+                  <Button
+                    iconOnly
                     onClick={() => setInfoExerciseId(ex.id)}
                     aria-label="Подробнее"
                   >
                     <InfoIcon />
-                  </button>
-                  <button
-                    className="session__add-set"
-                    onClick={() => addSet(ex.id)}
-                  >
+                  </Button>
+                  <Button flex onClick={() => addSet(ex.id)}>
                     + подход
-                  </button>
-                  <button
-                    className={`session__done${isDone ? ' session__done--active' : ''}`}
+                  </Button>
+                  <Button
+                    variant="filled"
+                    active={isDone}
                     onClick={() => toggleDone(ex.id)}
                   >
                     готово
-                  </button>
+                  </Button>
                 </div>
               </li>
             );

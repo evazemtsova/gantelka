@@ -1,0 +1,39 @@
+/* ─── Surface — the «brutalist white tile» base ───────────────────────────── */
+
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.surface--sm-shadow {
+  box-shadow: var(--shadow-sm);
+}
+
+.surface--active {
+  background: var(--surface-active);
+}
+
+/* ─── Divided row — list items with horizontal separator ─────────────────── */
+
+.divided-row {
+  padding: var(--s-4) 0;
+  border-bottom: 1px solid var(--divider);
+}
+
+.divided-row:first-child {
+  padding-top: 0;
+}
+
+.divided-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* ─── Chips row — wrapping row of selectable chips ───────────────────────── */
+
+.chips-row {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}

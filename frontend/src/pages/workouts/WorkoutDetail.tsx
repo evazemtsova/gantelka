@@ -1,7 +1,10 @@
 import type { Workout } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { ScreenFooter } from '../../components/ui/ScreenFooter';
 import { ListItem } from '../../components/ui/ListItem';
 import { Button } from '../../components/ui/Button';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { EditIcon, TrashIcon } from '../../components/ui/icons';
 import { exerciseMeta } from '../../constants/labels';
 import './Workouts.css';
@@ -28,7 +31,7 @@ export function WorkoutDetailScreen({
   const hasSecondaryActions = !isArchived && (onArchive || onEdit || onDelete);
 
   return (
-    <div className="workout-detail">
+    <Screen withFooter>
       <div className="workout-detail__content">
         <ScreenHeader title={workout.name} onBack={onBack} />
 
@@ -44,11 +47,11 @@ export function WorkoutDetailScreen({
             ))}
           </ul>
         ) : (
-          <p className="workout-detail__empty">упражнений нет</p>
+          <EmptyState>упражнений нет</EmptyState>
         )}
       </div>
 
-      <div className="workout-detail__actions-stack">
+      <ScreenFooter column>
         {!isArchived && onStart && (
           <Button variant="filled" fullWidth onClick={onStart}>
             запустить
@@ -57,11 +60,9 @@ export function WorkoutDetailScreen({
 
         {isArchived ? (
           onDelete && (
-            <div className="workout-detail__actions">
-              <Button variant="outlined" flex onClick={onDelete}>
-                удалить
-              </Button>
-            </div>
+            <Button variant="outlined" flex onClick={onDelete}>
+              удалить
+            </Button>
           )
         ) : hasSecondaryActions ? (
           <div className="workout-detail__actions">
@@ -74,7 +75,7 @@ export function WorkoutDetailScreen({
             {onDelete && <Button iconOnly onClick={onDelete}><TrashIcon /></Button>}
           </div>
         ) : null}
-      </div>
-    </div>
+      </ScreenFooter>
+    </Screen>
   );
 }

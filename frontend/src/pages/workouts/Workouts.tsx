@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Workout } from '../../types';
+import { Screen } from '../../components/ui/Screen';
 import { ListItem } from '../../components/ui/ListItem';
 import { Button } from '../../components/ui/Button';
 import { PlusIcon } from '../../components/ui/icons';
@@ -126,18 +127,18 @@ export default function Workouts({ onShowSubPage, onHideSubPage, onStartSession 
 
   if (activeWorkouts.length === 0) {
     return (
-      <div className="workouts">
-        <h1 className="workouts__title">тренировки</h1>
+      <Screen>
+        <h1 className="t-h1">тренировки</h1>
         <Button variant="filled" fullWidth icon={<PlusIcon />} onClick={() => goSub('create')}>
           создать тренировку
         </Button>
-      </div>
+      </Screen>
     );
   }
 
   return (
-    <div className="workouts">
-      <h1 className="workouts__title">тренировки</h1>
+    <Screen>
+      <h1 className="t-h1">тренировки</h1>
 
       <div className="workouts__actions">
         <Button onClick={() => goSub('archive')}>архив</Button>
@@ -146,8 +147,8 @@ export default function Workouts({ onShowSubPage, onHideSubPage, onStartSession 
         </Button>
       </div>
 
-      <div className="workouts__section">
-        <p className="workouts__section-title">
+      <div>
+        <p className="t-h2 workouts__section-title">
           активные тренировки ({activeWorkouts.length})
         </p>
         <ul className="workouts__list">
@@ -161,6 +162,6 @@ export default function Workouts({ onShowSubPage, onHideSubPage, onStartSession 
           ))}
         </ul>
       </div>
-    </div>
+    </Screen>
   );
 }

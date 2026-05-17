@@ -1,0 +1,11 @@
+.screen-footer {
+  flex-shrink: 0;
+  width: 100%;
+  padding-top: var(--s-7);
+  display: flex;
+  gap: var(--s-3);
+}
+
+.screen-footer--column {
+  flex-direction: column;
+}
