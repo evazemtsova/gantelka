@@ -10,6 +10,7 @@ interface ButtonProps {
   flex?: boolean;
   /** width: 100% — full width standalone button */
   fullWidth?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   children?: React.ReactNode;
 }
@@ -20,6 +21,7 @@ export function Button({
   iconOnly = false,
   flex = false,
   fullWidth = false,
+  disabled = false,
   onClick,
   children,
 }: ButtonProps) {
@@ -29,10 +31,11 @@ export function Button({
     iconOnly && 'btn--icon-only',
     flex && 'btn--flex',
     fullWidth && 'btn--full-width',
+    disabled && 'btn--disabled',
   ].filter(Boolean).join(' ');
 
   return (
-    <button className={classes} onClick={onClick}>
+    <button className={classes} onClick={onClick} disabled={disabled}>
       {icon && <span className="btn__icon">{icon}</span>}
       {children}
     </button>

@@ -5,7 +5,7 @@
 }
 
 body {
-  background: #0f0f0f;
+  background: var(--bg-dark);
   color: #f1f1f1;
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 16px;

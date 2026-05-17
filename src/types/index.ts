@@ -19,22 +19,21 @@ export interface Exercise {
   description?: string;
 }
 
+/** Подход внутри сессии. Значения строковые — это форма ввода. */
 export interface WorkoutSet {
   id: string;
-  exerciseId: string;
-  reps?: number;
-  weight?: number;
-  duration?: number; // seconds
-  restTime?: number; // seconds
+  reps: string;
+  weight: string;
 }
 
+/** Тренировка — единая модель для списка, архива и сплита. */
 export interface Workout {
   id: string;
-  title: string;
-  date: string; // ISO date string
-  sets: WorkoutSet[];
-  notes?: string;
-  durationMinutes?: number;
+  name: string;
+  date: string;
+  exercises: Exercise[];
+  isArchived?: boolean;
+  isTrial?: boolean;
 }
 
 export interface BodyMeasurement {

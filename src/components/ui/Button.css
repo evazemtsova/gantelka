@@ -20,6 +20,9 @@
 .btn--filled  { background: var(--accent); }
 .btn--outlined { background: #fff; }
 
+.btn--filled.btn--disabled { background: var(--accent-dark); cursor: not-allowed; }
+.btn--outlined.btn--disabled { color: var(--text-muted); cursor: not-allowed; }
+
 .btn--flex       { flex: 1; }
 .btn--full-width { width: 100%; }
 

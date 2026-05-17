@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import Dashboard from '../pages/Dashboard';
-import Exercises from '../pages/Exercises';
+import Exercises from '../pages/exercises/Exercises';
 import Home from '../pages/Home';
+import DevSelect from '../pages/DevSelect';
 import Login from '../pages/Login';
 import Progress from '../pages/Progress';
-import Workouts from '../pages/Workouts';
+import WorkoutSession from '../pages/WorkoutSession';
+import Workouts from '../pages/workouts/Workouts';
+import { WorkoutDetailScreen } from '../pages/workouts/WorkoutDetail';
+import { useWorkouts } from '../store/WorkoutsContext';
 import './Layout.css';
 
 type Page = 'main' | 'analytics' | 'profile';
@@ -55,16 +59,31 @@ const NAV_ITEMS: { id: Page; label: string; Icon: React.ComponentType<{ active?:
   { id: 'profile', label: 'Профиль', Icon: ProfileIcon },
 ];
 
+const TRIAL_WORKOUT_ID = 'w1';
+
 export default function Layout() {
+  const { state, dispatch } = useWorkouts();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasPickedMode, setHasPickedMode] = useState(false);
   const [page, setPage] = useState<Page>('main');
   const [mainView, setMainView] = useState<MainView>('home');
   const [hideNav, setHideNav] = useState(false);
+  const [sessionWorkoutId, setSessionWorkoutId] = useState<string | null>(null);
+  const [previewWorkoutId, setPreviewWorkoutId] = useState<string | null>(null);
 
   function handleTabClick(id: Page) {
     setPage(id);
     if (id === 'main') setMainView('home');
     setHideNav(false);
+  }
+
+  function pickMode(workoutId: string | null) {
+    dispatch({ type: 'set-current', id: workoutId });
+    setPage('main');
+    setMainView('home');
+    setHideNav(false);
+    setSessionWorkoutId(null);
+    setHasPickedMode(true);
   }
 
   if (!isAuthenticated) {
@@ -77,13 +96,75 @@ export default function Layout() {
     );
   }
 
+  if (!hasPickedMode) {
+    return (
+      <div className="layout">
+        <div className="content">
+          <DevSelect
+            onNewbie={() => pickMode(null)}
+            onReturning={() => pickMode(TRIAL_WORKOUT_ID)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionWorkoutId) {
+    function finishSession() {
+      setSessionWorkoutId(null);
+      setPage('main');
+      setMainView('home');
+      setHideNav(false);
+    }
+    return (
+      <div className="layout">
+        <div className="content">
+          <WorkoutSession
+            workoutId={sessionWorkoutId}
+            onBack={() => setSessionWorkoutId(null)}
+            onFinish={finishSession}
+            onGoToProgress={() => {
+              setSessionWorkoutId(null);
+              setPage('analytics');
+              setHideNav(false);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const previewWorkout = previewWorkoutId
+    ? state.workouts.find((w) => w.id === previewWorkoutId)
+    : null;
+  if (previewWorkout) {
+    return (
+      <div className="layout">
+        <div className="content">
+          <WorkoutDetailScreen
+            workout={previewWorkout}
+            isArchived={false}
+            onBack={() => setPreviewWorkoutId(null)}
+            onStart={() => {
+              setSessionWorkoutId(previewWorkout.id);
+              setPreviewWorkoutId(null);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <div className="layout">
       <div className="content">
         {page === 'main' && mainView === 'home' && (
           <Home
+            onStartTrial={() => setMainView('workouts')}
             onOpenExercises={() => setMainView('exercises')}
             onOpenWorkouts={() => setMainView('workouts')}
+            onStartSession={(id) => setPreviewWorkoutId(id)}
           />
         )}
         {page === 'main' && mainView === 'exercises' && (
@@ -96,10 +177,11 @@ export default function Layout() {
           <Workouts
             onShowSubPage={() => setHideNav(true)}
             onHideSubPage={() => setHideNav(false)}
+            onStartSession={(id) => setSessionWorkoutId(id)}
           />
         )}
         {page === 'analytics' && <Progress />}
-        {page === 'profile' && <Dashboard />}
+        {page === 'profile' && <Dashboard onGoToDevScreen={() => setHasPickedMode(false)} />}
       </div>
       {!hideNav && (
         <nav className="bottom-nav">

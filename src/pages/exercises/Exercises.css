@@ -252,52 +252,13 @@
 
 /* ─── Exercise detail ─── */
 .exercise-detail {
-  padding: var(--screen-padding);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   min-height: 100%;
 }
 
-.exercise-detail__content {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.exercise-detail__fields {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.exercise-detail__field {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.exercise-detail__label {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.exercise-detail__label--muted {
-  color: var(--text-muted);
-}
-
-.exercise-detail__value {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 500;
-  line-height: 20px;
-  text-transform: uppercase;
-  color: var(--text);
+.exercise-detail .exercise-info {
+  flex: 1;
 }
 
 /* ─── Add to workout screen ─── */
@@ -352,6 +313,6 @@
   display: flex;
   gap: 10px;
   align-items: stretch;
-  padding-top: 24px;
+  padding: 0 24px 24px;
 }
 

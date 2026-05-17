@@ -2,7 +2,7 @@ import { BackIcon } from './icons';
 import './ScreenHeader.css';
 
 interface ScreenHeaderProps {
-  title: string;
+  title?: string;
   onBack: () => void;
 }
 
@@ -12,7 +12,7 @@ export function ScreenHeader({ title, onBack }: ScreenHeaderProps) {
       <button className="screen-header__back" onClick={onBack} aria-label="Назад">
         <BackIcon />
       </button>
-      <h1 className="screen-header__title">{title}</h1>
+      {title && <h1 className="screen-header__title">{title}</h1>}
     </div>
   );
 }

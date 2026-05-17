@@ -1,25 +1,14 @@
 import { useState } from 'react';
-import type { Exercise, ExerciseType, MuscleGroup } from '../types';
-import { ScreenHeader } from '../components/ui/ScreenHeader';
-import { Dropdown } from '../components/ui/Dropdown';
-import { Button } from '../components/ui/Button';
+import type { Exercise, ExerciseType, MuscleGroup } from '../../types';
+import { MUSCLE_LABELS_CAP, SELECTABLE_MUSCLE_GROUPS } from '../../constants/labels';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Dropdown } from '../../components/ui/Dropdown';
+import { Button } from '../../components/ui/Button';
 import './CreateExercise.css';
 
-const MUSCLE_GROUP_LABELS: Record<string, string> = {
-  chest: 'Грудь',
-  back: 'Спина',
-  shoulders: 'Плечи',
-  arms: 'Руки',
-  legs: 'Ноги',
-  glutes: 'Ягодицы',
-  core: 'Пресс',
-};
-
-const MUSCLE_GROUPS: MuscleGroup[] = ['chest', 'back', 'legs', 'shoulders', 'arms', 'glutes', 'core'];
-
-const MUSCLE_GROUP_OPTIONS = MUSCLE_GROUPS.map((mg) => ({
+const MUSCLE_GROUP_OPTIONS = SELECTABLE_MUSCLE_GROUPS.map((mg) => ({
   value: mg,
-  label: MUSCLE_GROUP_LABELS[mg],
+  label: MUSCLE_LABELS_CAP[mg],
 }));
 
 const TYPE_PARAMS: Record<ExerciseType, string[]> = {

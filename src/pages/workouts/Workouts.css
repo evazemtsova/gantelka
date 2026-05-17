@@ -86,11 +86,17 @@
   color: var(--text-muted);
 }
 
+.workout-detail__actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 24px;
+}
+
 .workout-detail__actions {
   display: flex;
   gap: 10px;
   align-items: stretch;
-  padding-top: 24px;
 }
 
 
@@ -243,87 +249,4 @@
 }
 
 
-/* ─── Add to split ───────────────────────────────────────────────────────────── */
-
-/* ─── Split screen (empty state) ────────────────────────────────────────────── */
-
-.split-screen {
-  padding: var(--screen-padding);
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-/* ─── Split edit ─────────────────────────────────────────────────────────────── */
-
-.split-edit {
-  padding: var(--screen-padding);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100%;
-}
-
-.split-edit__content {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.split-edit__section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.split-edit__label {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-
-.split-edit__list {
-  list-style: none;
-  margin-bottom: 4px;
-}
-
-.split-edit__actions {
-  display: flex;
-  gap: 10px;
-  padding-top: 24px;
-}
-
-/* ─── Split add workouts ─────────────────────────────────────────────────────── */
-
-.split-add {
-  padding: var(--screen-padding);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100%;
-  gap: 34px;
-}
-
-.split-add__content {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.split-add__list {
-  list-style: none;
-}
-
-
-.split-add__empty {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 400;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
 

@@ -71,7 +71,7 @@
 /* ─── Features (dark) ──────────────────────────────────────────────────── */
 
 .login__features {
-  background: #0f0f0f;
+  background: var(--bg-dark);
   color: #fff;
   padding: 48px 32px 32px;
 }
