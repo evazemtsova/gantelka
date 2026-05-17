@@ -6,6 +6,14 @@
 
 ## 2026-05-18
 
+### Чистка документации: 9 → 7
+- Удалены `DESIGN_SYSTEM.md` (TZ миграции выполнена в `e9c5023`, остальное дублировало код) и `BACKEND_PLAN.md` (фазы 1–3 done, Phase 4 partial — pending пункты переехали в TDR «Известные ограничения»).
+- В `FRONTEND.md` добавлена секция «Визуальный язык» — принципы (brutalist, mono+sans, UPPERCASE, no modals/radius), семантика акцентов (`--accent` = CTA, `--accent-dark` = done/active), список «что НЕ делать». Это уникальный контент DESIGN_SYSTEM, не дублирующий код.
+- `TDR.md` обновлён под актуальное состояние: persistence через middleware, новые типы (Session/SessionExercise/SessionSet), новые pages (SessionDetail, HistoryAll) и миграции, актуальный граф навигации (без preview-ветки из Home, с переходом в HistoryAll, с архивным flow), таблица mapping action → Supabase (включая `add-session`).
+- `BACKEND.md`: тип Session добавлен, контракт описан (каскады, JOIN-имена), удалён ошибочный пункт про UI-ограничения пробных тренировок (UX-ограничений больше нет). Mapping-таблица убрана из BACKEND.md → ссылка на TDR (единая точка правды).
+- `FRONTEND.md` §8: убрана ссылка на удалённую dev-кнопку.
+- `README.md`, `CLAUDE.md`: ссылки на удалённые доки убраны; в CLAUDE.md fix пути токенов (`Layout.css` → `styles/tokens.css`).
+
 ### Полный экран истории + пагинация
 - Новый child-screen `HistoryAll` (`pages/HistoryAll.tsx`): список всех завершённых сессий, сорт по `finished_at desc`. Bottom nav скрыт (как у других детальных экранов).
 - Точка входа — кликабельная шапка блока «история» на `Home`: «история» слева + мутед «показать все» справа. Tap по строке → открывает HistoryAll.

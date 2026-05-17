@@ -28,8 +28,7 @@ npx tsc --noEmit -p tsconfig.app.json
 
 Контекст по продукту и архитектуре:
 - [docs/PRD.md](docs/PRD.md) — что за продукт, флоу пользователя
-- [docs/TDR.md](docs/TDR.md) — стек, главные архитектурные решения, структура файлов, навигационный граф
-- [docs/BACKEND_PLAN.md](docs/BACKEND_PLAN.md) — фазовый план миграции на бек
+- [docs/TDR.md](docs/TDR.md) — стек, главные архитектурные решения, структура файлов, навигационный граф, mapping action → Supabase
 
 История изменений:
 - [docs/CHANGELOG.md](docs/CHANGELOG.md) — журнал, новые записи сверху
@@ -56,7 +55,7 @@ npx tsc --noEmit -p tsconfig.app.json
 --font-sans:     'Manrope' /* тело */
 ```
 
-Объявлены в `:root` в [frontend/src/components/Layout.css](frontend/src/components/Layout.css). Хардкод этих цветов в CSS — баг.
+Объявлены в `:root` в [frontend/src/styles/tokens.css](frontend/src/styles/tokens.css). Хардкод этих цветов в CSS — баг.
 
 ## После изменений
 

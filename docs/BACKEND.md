@@ -15,40 +15,28 @@
 
 **Своего бекенд-сервиса нет.** Логика — в БД (RLS, триггеры, view, RPC при необходимости). Если в будущем потребуется тяжёлая серверная логика — поднимем отдельный сервис рядом, БД остаётся в Supabase.
 
-Действующий план миграции на бек: [BACKEND_PLAN.md](./BACKEND_PLAN.md).
-
 ## Контракт с фронтом
 
 Эталон domain-моделей — [src/types/index.ts](../frontend/src/types/index.ts).
 
 ```
-Exercise        { id, name, muscleGroup, exerciseType, isCustom?, description? }
-Workout         { id, name, date, exercises: Exercise[], isArchived?, isTrial? }
-WorkoutSet      { id, reps: string, weight: string }
+Exercise         { id, name, muscleGroup, exerciseType, isCustom?, description? }
+Workout          { id, name, date, exercises: Exercise[], isArchived?, isTrial? }
+WorkoutSet       { id, reps: string, weight: string }
+Session          { id, workoutId, workoutName, exerciseCount, nextWorkoutDate, finishedAt, exercises: SessionExercise[] }
+SessionExercise  { id, name, muscleGroup, exerciseType, isCustom?, sets: SessionSet[] }
+SessionSet       { reps: string, weight: string }
 ```
 
 - БД хранит `is_archived` / `is_trial` / `muscle_group` / `exercise_type` (snake_case), клиент маппит на camelCase
-- `exercises` приходит inline (join через `workout_exercises`), а не списком id
-- `isTrial: true` — пробные тренировки, нельзя редактировать / удалять / архивировать (enforced на UI; на БД можно — для админских действий)
+- `exercises` в Workout приходит inline через nested select (`workout_exercises` + `exercises`), а не списком id
+- `exercises` в Session приходит через nested select `session_exercises` + `exercises` + `session_sets`. Имя/группа упражнения берутся из актуальной `exercises` (JOIN), не из снимка — рейнейм отражается и в истории
+- `isTrial: true` — флаг seed'а пробных тренировок. UX-ограничений больше нет (раньше нельзя было удалить/архивировать)
+- Каскады: удаление упражнения каскадно очищает `session_exercises` → `session_sets` (упражнение пропадает из истории во всех сессиях)
 
 ## Mapping reducer-actions → DB-операции
 
-| Фронт-action | Supabase-операция |
-|---|---|
-| `set-current` | `profiles.update({ current_workout_id })` |
-| `add-workout` | `workouts.insert` |
-| `update-workout` | `workouts.update` + sync `workout_exercises` (replace) |
-| `archive-workout` | `workouts.update({ is_archived: true })` |
-| `unarchive-workout` | `workouts.update({ is_archived: false })` |
-| `delete-workout` | `workouts.delete` (RLS-cascade чистит workout_exercises) |
-| `add-exercise` | `exercises.insert` |
-| `update-exercise` | `exercises.update` |
-| `add-exercise-to-workout` | `workout_exercises.insert` |
-
-Чтение:
-- `GET /workouts?select=*,workout_exercises(*,exercise:exercises(*))&order=position`
-- `GET /exercises?select=*`
-- `GET /profiles?select=*&id=eq.<uid>`
+Полный mapping вынесен в [TDR.md](./TDR.md). Дублировать не будем — единая точка правды.
 
 ## Правила работы с Supabase
 
@@ -77,7 +65,7 @@ create policy "foo_select_own" on public.foo for select using (auth.uid() = user
 ### 5. Don't trust the client
 RLS защищает доступ. Но на бизнес-логику — отдельные проверки в триггерах / RPC, не на клиенте.
 
-Например: «нельзя архивировать чужую тренировку» — это RLS. «Нельзя удалить пробную тренировку» — это либо `before delete` триггер, либо UI-only ограничение (что мы сейчас и сделали).
+Например: «нельзя архивировать чужую тренировку» — это RLS. Любое будущее «нельзя X» — выбираем уровень осознанно: RLS (data-боундари), триггер (бизнес-правило в БД), UI-only (мягкое ограничение для UX, обходимое).
 
 ### 6. Performance
 - Индекс на `user_id` обязателен — все запросы фильтруют по нему
@@ -111,4 +99,4 @@ frontend/
 1. Миграция применяется на чистой БД (тест: `supabase db reset` локально)
 2. RLS включён на каждой новой таблице, политики покрывают select/insert/update/delete
 3. Типы фронта (`frontend/src/types/index.ts`) согласованы со схемой
-4. Если меняется контракт — обновлён `BACKEND.md` и `BACKEND_PLAN.md`
+4. Если меняется контракт — обновлены `BACKEND.md` и `TDR.md` (mapping таблица)
