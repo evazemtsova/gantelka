@@ -36,6 +36,22 @@ export interface Workout {
   isTrial?: boolean;
 }
 
+/** Подход в снимке истории — числа уже как пользователь ввёл (строкой). */
+export interface SessionSet {
+  reps: string;
+  weight: string;
+}
+
+/** Упражнение в снимке истории — статичный снимок имени/группы. */
+export interface SessionExercise {
+  id: string;                     // ссылка на exercise.id (может быть удалён к моменту чтения)
+  name: string;
+  muscleGroup: MuscleGroup;
+  exerciseType: ExerciseType;
+  isCustom?: boolean;
+  sets: SessionSet[];
+}
+
 /** Завершённая тренировка — запись в истории. */
 export interface Session {
   id: string;
@@ -44,6 +60,7 @@ export interface Session {
   exerciseCount: number;
   nextWorkoutDate: string | null;
   finishedAt: string;             // ISO
+  exercises: SessionExercise[];   // снимок выполненных упражнений с подходами
 }
 
 export interface BodyMeasurement {

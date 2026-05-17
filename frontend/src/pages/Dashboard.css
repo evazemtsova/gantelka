@@ -5,6 +5,62 @@
   gap: 24px;
 }
 
+.dashboard__user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dashboard__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--accent);
+}
+
+.dashboard__avatar--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  color: #000;
+}
+
+.dashboard__user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dashboard__name {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: #000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard__email {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard__guest {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .dashboard__notice {
   font-family: var(--font-sans);
   font-size: var(--text-body-sm);

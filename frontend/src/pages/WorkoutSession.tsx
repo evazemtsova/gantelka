@@ -114,15 +114,32 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
             disabled={!canConfirmDate}
             onClick={() => {
               if (!workout) return;
+              const snapshot = exercises
+                .map((ex) => {
+                  const sets = (setsByEx[ex.id] || [])
+                    .filter((s) => s.reps !== '' || s.weight !== '')
+                    .map((s) => ({ reps: s.reps, weight: s.weight }));
+                  return { ex, sets };
+                })
+                .filter(({ ex, sets }) => sets.length > 0 || doneIds.has(ex.id))
+                .map(({ ex, sets }) => ({
+                  id: ex.id,
+                  name: ex.name,
+                  muscleGroup: ex.muscleGroup,
+                  exerciseType: ex.exerciseType,
+                  isCustom: ex.isCustom,
+                  sets,
+                }));
               dispatch({
                 type: 'add-session',
                 session: {
                   id: crypto.randomUUID(),
                   workoutId: workout.id,
                   workoutName: workout.name,
-                  exerciseCount: workout.exercises.length,
+                  exerciseCount: snapshot.length || workout.exercises.length,
                   nextWorkoutDate: nextDate || null,
                   finishedAt: new Date().toISOString(),
+                  exercises: snapshot,
                 },
               });
               setStep('success');

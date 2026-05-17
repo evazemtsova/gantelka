@@ -35,6 +35,24 @@ interface ProfileRow {
   current_workout_id: string | null;
 }
 
+interface SessionSetRow {
+  position: number;
+  reps: string | null;
+  weight: string | null;
+}
+
+interface SessionExerciseRow {
+  position: number;
+  exercises: {
+    id: string;
+    name: string;
+    muscle_group: MuscleGroup;
+    exercise_type: ExerciseType;
+    is_custom: boolean;
+  } | null;
+  session_sets: SessionSetRow[];
+}
+
 interface SessionRow {
   id: string;
   user_id: string;
@@ -43,6 +61,7 @@ interface SessionRow {
   exercise_count: number;
   next_workout_date: string | null;
   finished_at: string;
+  session_exercises: SessionExerciseRow[];
 }
 
 // ─── Mappers snake → camel ────────────────────────────────────────────────────
@@ -59,6 +78,21 @@ function toExercise(row: ExerciseRow): Exercise {
 }
 
 function toSession(row: SessionRow): Session {
+  const exercises = (row.session_exercises ?? [])
+    .filter((se) => se.exercises !== null)
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((se) => ({
+      id: se.exercises!.id,
+      name: se.exercises!.name,
+      muscleGroup: se.exercises!.muscle_group,
+      exerciseType: se.exercises!.exercise_type,
+      isCustom: se.exercises!.is_custom,
+      sets: (se.session_sets ?? [])
+        .slice()
+        .sort((a, b) => a.position - b.position)
+        .map((s) => ({ reps: s.reps ?? '', weight: s.weight ?? '' })),
+    }));
   return {
     id: row.id,
     workoutId: row.workout_id,
@@ -66,6 +100,7 @@ function toSession(row: SessionRow): Session {
     exerciseCount: row.exercise_count,
     nextWorkoutDate: row.next_workout_date,
     finishedAt: row.finished_at,
+    exercises,
   };
 }
 
@@ -100,7 +135,18 @@ export async function fetchHydration(): Promise<HydrationData> {
       .from('workouts')
       .select('*, workout_exercises(position, exercises(*))')
       .order('created_at'),
-    supabase.from('sessions').select('*').order('finished_at', { ascending: false }).limit(50),
+    supabase
+      .from('sessions')
+      .select(`
+        *,
+        session_exercises(
+          position,
+          exercises(id, name, muscle_group, exercise_type, is_custom),
+          session_sets(position, reps, weight)
+        )
+      `)
+      .order('finished_at', { ascending: false })
+      .limit(50),
     supabase.from('profiles').select('id, current_workout_id').single(),
   ]);
 
@@ -116,6 +162,32 @@ export async function fetchHydration(): Promise<HydrationData> {
     currentWorkoutId: (profileRes.data as ProfileRow).current_workout_id,
   };
 }
+
+/**
+ * Подгружает порцию сессий старше указанной даты (cursor-based pagination).
+ * `beforeIso` — finished_at последнего загруженного элемента; `null` для первой страницы.
+ */
+export async function fetchSessionsPage(beforeIso: string | null, limit: number): Promise<Session[]> {
+  let query = supabase
+    .from('sessions')
+    .select(`
+      *,
+      session_exercises(
+        position,
+        exercises(id, name, muscle_group, exercise_type, is_custom),
+        session_sets(position, reps, weight)
+      )
+    `)
+    .order('finished_at', { ascending: false })
+    .limit(limit);
+  if (beforeIso) {
+    query = query.lt('finished_at', beforeIso);
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data as SessionRow[]).map(toSession);
+}
+
 
 // ─── Persist (write) ──────────────────────────────────────────────────────────
 
@@ -280,7 +352,7 @@ export async function persistAction(action: PersistableAction, ctx: PersistConte
 
     case 'add-session': {
       const s = action.session;
-      const { error } = await supabase.from('sessions').insert({
+      const { error: e1 } = await supabase.from('sessions').insert({
         id: s.id,
         user_id: userId,
         workout_id: s.workoutId,
@@ -289,7 +361,42 @@ export async function persistAction(action: PersistableAction, ctx: PersistConte
         next_workout_date: s.nextWorkoutDate,
         finished_at: s.finishedAt,
       });
-      if (error) throw error;
+      if (e1) throw e1;
+      if (s.exercises.length === 0) return;
+
+      const seRows = s.exercises.map((ex, i) => ({
+        session_id: s.id,
+        exercise_id: ex.id,
+        position: i,
+      }));
+      const { data: seData, error: e2 } = await supabase
+        .from('session_exercises')
+        .insert(seRows)
+        .select('id, position');
+      if (e2) throw e2;
+
+      const setRows: Array<{
+        session_exercise_id: string;
+        position: number;
+        reps: string;
+        weight: string;
+      }> = [];
+      for (const se of seData ?? []) {
+        const original = s.exercises[se.position];
+        if (!original) continue;
+        original.sets.forEach((set, i) => {
+          setRows.push({
+            session_exercise_id: se.id,
+            position: i,
+            reps: set.reps,
+            weight: set.weight,
+          });
+        });
+      }
+      if (setRows.length > 0) {
+        const { error: e3 } = await supabase.from('session_sets').insert(setRows);
+        if (e3) throw e3;
+      }
       return;
     }
   }

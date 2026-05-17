@@ -3,10 +3,11 @@ import Dashboard from '../pages/Dashboard';
 import Exercises from '../pages/exercises/Exercises';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
+import HistoryAll from '../pages/HistoryAll';
 import Progress from '../pages/Progress';
+import SessionDetail from '../pages/SessionDetail';
 import WorkoutSession from '../pages/WorkoutSession';
 import Workouts from '../pages/workouts/Workouts';
-import { WorkoutDetailScreen } from '../pages/workouts/WorkoutDetail';
 import { useSession } from '../lib/auth';
 import { fetchHydration } from '../lib/queries';
 import { useWorkouts } from '../store/WorkoutsContext';
@@ -69,7 +70,8 @@ export default function Layout() {
   const [mainView, setMainView] = useState<MainView>('home');
   const [hideNav, setHideNav] = useState(false);
   const [sessionWorkoutId, setSessionWorkoutId] = useState<string | null>(null);
-  const [previewWorkoutId, setPreviewWorkoutId] = useState<string | null>(null);
+  const [historySessionId, setHistorySessionId] = useState<string | null>(null);
+  const [historyAllOpen, setHistoryAllOpen] = useState(false);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
 
   function startSession(workoutId: string) {
@@ -144,6 +146,35 @@ export default function Layout() {
     return <div className="layout" />;
   }
 
+  const historySession = historySessionId
+    ? state.sessions.find((s) => s.id === historySessionId)
+    : null;
+  if (historySession) {
+    return (
+      <div className="layout">
+        <div className="content">
+          <SessionDetail
+            session={historySession}
+            onBack={() => setHistorySessionId(null)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (historyAllOpen) {
+    return (
+      <div className="layout">
+        <div className="content">
+          <HistoryAll
+            onBack={() => setHistoryAllOpen(false)}
+            onOpenSession={(id) => setHistorySessionId(id)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   if (sessionWorkoutId) {
     function finishSession() {
       setSessionWorkoutId(null);
@@ -169,28 +200,6 @@ export default function Layout() {
     );
   }
 
-  const previewWorkout = previewWorkoutId
-    ? state.workouts.find((w) => w.id === previewWorkoutId)
-    : null;
-  if (previewWorkout) {
-    return (
-      <div className="layout">
-        <div className="content">
-          <WorkoutDetailScreen
-            workout={previewWorkout}
-            isArchived={false}
-            onBack={() => setPreviewWorkoutId(null)}
-            onStart={() => {
-              startSession(previewWorkout.id);
-              setPreviewWorkoutId(null);
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
-
-
   return (
     <div className="layout">
       <div className="content">
@@ -199,7 +208,8 @@ export default function Layout() {
             onStartTrial={() => setMainView('workouts')}
             onOpenExercises={() => setMainView('exercises')}
             onOpenWorkouts={() => setMainView('workouts')}
-            onStartSession={(id) => setPreviewWorkoutId(id)}
+            onOpenSession={(id) => setHistorySessionId(id)}
+            onOpenHistory={() => setHistoryAllOpen(true)}
           />
         )}
         {page === 'main' && mainView === 'exercises' && (

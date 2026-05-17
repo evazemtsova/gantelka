@@ -91,19 +91,18 @@ export default function Workouts({ onShowSubPage, onHideSubPage, onStartSession 
   }
 
   if (view === 'detail-active' && selectedWorkout) {
-    const isTrial = selectedWorkout.isTrial === true;
     return (
       <WorkoutDetailScreen
         workout={selectedWorkout}
         isArchived={false}
         onBack={backToList}
         onStart={onStartSession ? () => onStartSession(selectedWorkout.id) : undefined}
-        onArchive={isTrial ? undefined : () => {
+        onArchive={() => {
           dispatch({ type: 'archive-workout', id: selectedWorkout.id });
           backToList();
         }}
-        onEdit={isTrial ? undefined : () => { setEditingWorkout(selectedWorkout); setView('edit'); }}
-        onDelete={isTrial ? undefined : () => {
+        onEdit={() => { setEditingWorkout(selectedWorkout); setView('edit'); }}
+        onDelete={() => {
           dispatch({ type: 'delete-workout', id: selectedWorkout.id });
           backToList();
         }}
@@ -117,6 +116,10 @@ export default function Workouts({ onShowSubPage, onHideSubPage, onStartSession 
         workout={selectedWorkout}
         isArchived={true}
         onBack={backToArchive}
+        onUnarchive={() => {
+          dispatch({ type: 'unarchive-workout', id: selectedWorkout.id });
+          backToArchive();
+        }}
         onDelete={() => {
           dispatch({ type: 'delete-workout', id: selectedWorkout.id });
           backToArchive();

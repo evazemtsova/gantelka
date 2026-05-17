@@ -15,6 +15,7 @@ export interface WorkoutDetailScreenProps {
   onBack: () => void;
   onStart?: () => void;
   onArchive?: () => void;
+  onUnarchive?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -25,6 +26,7 @@ export function WorkoutDetailScreen({
   onBack,
   onStart,
   onArchive,
+  onUnarchive,
   onEdit,
   onDelete,
 }: WorkoutDetailScreenProps) {
@@ -59,11 +61,18 @@ export function WorkoutDetailScreen({
         )}
 
         {isArchived ? (
-          onDelete && (
-            <Button variant="outlined" flex onClick={onDelete}>
-              удалить
-            </Button>
-          )
+          <>
+            {onUnarchive && (
+              <Button variant="filled" fullWidth onClick={onUnarchive}>
+                восстановить
+              </Button>
+            )}
+            {onDelete && (
+              <Button variant="outlined" fullWidth onClick={onDelete}>
+                удалить
+              </Button>
+            )}
+          </>
         ) : hasSecondaryActions ? (
           <div className="workout-detail__actions">
             {onArchive && (

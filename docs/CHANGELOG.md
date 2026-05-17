@@ -6,6 +6,54 @@
 
 ## 2026-05-18
 
+### Полный экран истории + пагинация
+- Новый child-screen `HistoryAll` (`pages/HistoryAll.tsx`): список всех завершённых сессий, сорт по `finished_at desc`. Bottom nav скрыт (как у других детальных экранов).
+- Точка входа — кликабельная шапка блока «история» на `Home`: «история» слева + мутед «показать все» справа. Tap по строке → открывает HistoryAll.
+- Пагинация cursor-based: `fetchSessionsPage(beforeIso, limit)` в `queries.ts`, фильтр `lt('finished_at', cursor)`. Стартует с уже загруженных в global state (первые 50 из hydration), кнопка «загрузить ещё» подгружает следующие 50; пропадает когда сервер вернул `< PAGE_SIZE`.
+- Группировка по месяцам пока не делается (юзер сказал не надо для MVP). EmptyState не делается — на пустой истории шапка «история» на Home скрыта, попасть невозможно.
+
+### SessionDetail: дата как центрированный разделитель главы
+- Дата вернулась отдельным элементом между шапкой и списком, но теперь явно — моно UPPERCASE 16px, тёмный текст, центрировано, с тонкими горизонтальными линиями по бокам как «глава». Выглядит как осмысленный разделитель сессии, а не как мутед-каптион.
+- Структурно gap-проблема решена через врапер: `session-detail__body` — один flex-ребёнок `Screen` (только 30px gap от шапки), внутри дата и список с тесным gap `var(--s-5)`.
+- `rightSlot` из `ScreenHeader` удалён обратно — мы его не используем, лишний API в shared-компоненте не нужен.
+
+### SessionDetail: полировка по фидбеку дизайнера
+- Дата прижата к заголовку (`margin-top: -8px`, `margin-bottom: var(--s-6)`) — компенсирует нижний отступ `ScreenHeader`, убирает «тройной воздух» между шапкой и первым упражнением. Дата теперь lowercase «17 мая 2026» (uppercase утяжелял).
+- Формат пустого подхода: `—` если не введены повторы (раньше было `— × 5 кг`, что читалось как баг). `12 раз` без веса — оставлено (валидный bodyweight-сценарий).
+- EmptyState текст: «упражнения не записаны» (вместо «в этой тренировке нет данных по упражнениям» — короче и менее технично).
+- `aria-label` на дате — однозначный контекст для скрин-ридеров.
+
+### Детальный просмотр завершённой тренировки
+- Миграция `20260518000000_session_exercises.sql`: реляционная модель `session_exercises` + `session_sets`, обе с RLS и каскадами. При удалении упражнения из `exercises` каскад убирает его и из истории (`exercise_id` FK on delete cascade) — поведение, как просил юзер.
+- Типы: `SessionSet`, `SessionExercise`, `Session.exercises: SessionExercise[]`.
+- `WorkoutSession`: при «готово» собирает снимок выполненных упражнений (фильтр: есть хотя бы один заполненный подход или нажато «готово»). Поле `exerciseCount` = факт выполненных, а не план.
+- `queries.ts`:
+  - Hydration читает sessions через nested select `*, session_exercises(position, exercises(*), session_sets(position, reps, weight))` — имена/группы приходят JOIN'ом из актуальной `exercises`, а не из снимка. Переименование упражнения отразится и в истории.
+  - `add-session` пишет в 3 таблицы последовательно: `sessions` → `session_exercises` (с returning id) → `session_sets`.
+- Новый экран `SessionDetail` (`pages/SessionDetail.tsx`): заголовок = название тренировки + дата, список упражнений с подходами `N. reps × weight кг`. Переиспользует `Screen`, `ScreenHeader`, `EmptyState`, `exerciseMeta`.
+- `Home.tsx`: `ListItem` истории получил `onClick` → стрелка вернулась, клик открывает `SessionDetail`. Wire-up в `Layout` через `historySessionId`.
+
+**TODO юзеру:** применить миграцию `backend/supabase/migrations/20260518000000_session_exercises.sql` в Supabase SQL Editor.
+
+### Архивная тренировка: восстановление + нормальная ширина «удалить»
+- В `WorkoutDetailScreen` добавлен `onUnarchive`. Для архивной тренировки футер показывает filled «восстановить» сверху и outlined «удалить» снизу — обе `fullWidth`. Раньше была одна узкая `flex`-кнопка без соседей (CSS `flex` без братьев не растягивает).
+- В `Workouts.tsx` archive-view диспатчит `unarchive-workout` → тренировка возвращается в активные.
+
+### Пробные тренировки получили полный набор действий
+- В `Workouts.tsx` убрана ветка `isTrial ? undefined : ...` для `onArchive`/`onEdit`/`onDelete`. Теперь пробные тренировки можно архивировать, редактировать и удалять наравне с обычными — флаг `isTrial` остаётся только для seed-данных, на UI больше не влияет.
+
+### Главная: кнопка «начать тренировку» ведёт на список тренировок
+- В состоянии «есть тренировка» кнопка `home__start-btn` теперь вызывает `onOpenWorkouts` — открывается тот же экран Workouts, что и через нав-таб. Раньше открывался preview конкретной `currentWorkout`.
+- Удалён мёртвый код: проп `Home.onStartSession`, state `previewWorkoutId` в `Layout`, импорт `WorkoutDetailScreen` (он по-прежнему используется внутри `Workouts` через свой роутинг).
+
+### Главная: персональное приветствие
+- В состоянии «есть тренировка» вместо названия тренировки в `Home` показывается «привет, {имя}» — берём первое слово из `user_metadata.full_name`/`name`, lowercase. Без имени (анонимы / нет meta) — «привет!».
+
+### Профиль показывает данные пользователя
+- `Dashboard.tsx` читает `session.user.user_metadata` напрямую — миграция не нужна, поля уже есть в `auth.users` от Google OAuth.
+- Аватар (`avatar_url`/`picture`), имя (`full_name`/`name`), email — отображаются в карточке профиля. Fallback: круг с первой буквой имени («Гость» для анонимных).
+- Для `is_anonymous` пользователей показывается баннер с CTA «войти через google» — раньше был только текстовый notice без действия.
+
 ### Phase 4 (partial) — реальная история на главной
 - Новая таблица `public.sessions` с RLS (миграция `20260517210000_sessions.sql`). Поля: `workout_id` (set null при удалении), денормализованный `workout_name`, `exercise_count`, `next_workout_date`, `finished_at`. Индекс `(user_id, finished_at desc)`.
 - Тип `Session` в `types/index.ts`. Reducer-state получил `sessions: Session[]`, action `add-session`, селектор `useSessions()`.
