@@ -6,6 +6,45 @@
 
 ## 2026-05-17
 
+### 21:45 — Fix: ID новой тренировки → crypto.randomUUID()
+В `CreateWorkout` id создаваемой тренировки генерился как `String(Date.now())` — БД отказывала с `invalid input syntax for type uuid`. Заменено на `crypto.randomUUID()` (как уже было в `Exercises` для упражнений).
+
+### 21:30 — Backend Phase 3: запись данных в Supabase
+- `queries.ts.persistAction()` — единая точка записи, switch по `PersistableAction`. Покрывает все 9 мутаций: `set-current`, `add-workout`, `update-workout`, `archive-workout`, `unarchive-workout`, `delete-workout`, `add-exercise`, `update-exercise`, `add-exercise-to-workout`
+- `WorkoutsContext`: оборачивает `dispatch` — синхронно применяет к локальному state (optimistic UI), параллельно fire-and-forget пишет в Supabase. На failure — `console.error` (rollback отложен в Phase 4)
+- `Layout`: добавлен helper `startSession(workoutId)`, который dispatch'ит `set-current` перед открытием сессии. Используется и в preview-режиме, и в Workouts tab
+- Все компоненты страниц остались без изменений — продолжают вызывать `dispatch(...)`, middleware всё делает прозрачно
+- Mock-режим (`VITE_DEV_AUTH=mock`) обходит запись полностью
+
+Bundle 483→486 KB (+3 KB).
+
+Теперь полный CRUD работает: создание / редактирование / архивация / удаление тренировок и упражнений переживает рефреш страницы. `currentWorkoutId` сохраняется в `profiles` и подтягивается при следующем логине.
+
+**Известное ограничение:** при сбое записи UI показывает действие как успешное, а БД остаётся прежней. После следующего рефреша состояние «отскочит». Phase 4 — добавить rollback + toast.
+
+### 21:00 — Backend Phase 2: чтение данных из Supabase
+- `frontend/src/lib/queries.ts` — `fetchHydration()` параллельно загружает exercises, workouts (с inline join на `workout_exercises` + `exercises`), profile. Маппинг snake_case → camelCase локально в файле, типы `ExerciseRow`/`WorkoutRow`/`ProfileRow`
+- `WorkoutsContext`: добавлены `hydrate` и `reset` actions, поле `hydrated`. В реальном режиме initialState пустой, в mock — заполняется seed'ом сразу
+- `Layout`: `useEffect` на `userId` — после логина запускает `fetchHydration`. При logout — `dispatch({type:'reset'})`. Error-state с человекочитаемой ошибкой, loading-state пока `!state.hydrated`
+- Selectors (`useActiveWorkouts`, `useCurrentWorkout`, `useExercises`, `useArchivedWorkouts`) не изменились — все компоненты страниц работают как раньше
+
+После логина новый юзер видит 4 пробные тренировки + 17 упражнений, которые SQL-триггер засеял на его user_id. После logout state очищается, после следующего login — заново загружается.
+
+**Что осталось:** Phase 3 — записи (create/update/archive/delete) пока пишут только в локальный state, после рефреша пропадают. Phase 3 добавит `await supabase.from(...).insert()` перед dispatch.
+
+### 20:30 — Backend Phase 1: реальный auth через Supabase
+- Установлен `@supabase/supabase-js`
+- `frontend/src/lib/supabase.ts` — клиент, env-проверка с дружелюбным сообщением
+- `frontend/src/lib/auth.ts` — `useSession()` хук + `signInWithGoogle()` / `signInAnonymously()` / `signOut()`. В mock-режиме (`VITE_DEV_AUTH=mock`) возвращает фейковую сессию, не дёргает Supabase
+- `Login.tsx` — две кнопки: «войти через Google» (filled, primary) + «без регистрации» (outlined, secondary)
+- `Dashboard.tsx` — заменена dev-кнопка на «выйти» через `signOut()`. Для anonymous показывается хинт «данные сохраняются на устройстве, не теряй»
+- `Layout.tsx` — `useSession()` вместо локальных `isAuthenticated/hasPickedMode` стейтов. Loading-state — пустой layout. Без сессии — Login
+- Удалены `DevSelect.tsx`, `DevSelect.css` — anonymous auth закрыл их функцию
+
+Bundle вырос с 285→482 KB JS (138 KB gzip) — `@supabase/supabase-js` тащит base64/jws/etc. Норма для auth-клиента.
+
+Зачем: переход с фейкового isAuthenticated на настоящие сессии. После этого можно подключать data layer (Phase 2/3).
+
 ### 19:45 — Reorg: monorepo layout frontend/ + backend/
 Корень репозитория разделён на `frontend/` (React + Vite) и `backend/` (Supabase миграции). `docs/`, `CLAUDE.md`, `README.md` остаются в корне.
 

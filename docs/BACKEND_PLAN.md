@@ -37,11 +37,11 @@
 | Путь | Когда |
 |---|---|
 | **Google OAuth** | основной для постоянных пользователей |
-| **Anonymous Sign-In** | «попробовать без регистрации». Создаёт настоящего user в auth.users с `is_anonymous=true`. Все данные сохраняются. Потом можно линкануть к Google. |
+| **Anonymous Sign-In** | «без регистрации». Создаёт настоящего user в auth.users с `is_anonymous=true`. Все данные сохраняются. Потом можно линкануть к Google. |
 | **Dev-bypass** (`VITE_DEV_AUTH=mock`) | разработка фронта без подключения к Supabase. Фронт работает с локальным seed как сейчас. |
 
 Текущий DevSelect (новичок/старичок) **удаляется**. Его место занимает:
-- Лендинг с двумя CTA: «войти через Google» / «попробовать без регистрации»
+- Лендинг с двумя CTA: «войти через Google» / "без регистрации»
 - Anonymous-пользователь стартует с empty Home (триггер на сервере засеет ему пробные тренировки). Дальше — обычный флоу.
 
 ## Phases
@@ -53,32 +53,28 @@
 - [ ] **Юзер делает:** создаёт Supabase-проект, включает Google OAuth, включает Anonymous, применяет миграцию, копирует URL/anon-key в `frontend/.env.local`
 - [ ] **Юзер делает:** Vercel-проект, линкует репо, прокидывает те же env-vars
 
-### Phase 1 — Auth (0.5 дня)
-- `cd frontend && npm i @supabase/supabase-js`
-- `frontend/src/lib/supabase.ts` — клиент
-- `frontend/src/lib/dev-auth.ts` — bypass-логика по env-флагу
-- `Login.tsx` → реальный `signInWithOAuth({ provider: 'google' })`
-- Заменить DevSelect → кнопка «попробовать без регистрации» = `signInAnonymously()`
-- Session-listener в Layout: `supabase.auth.onAuthStateChange`
-- На логаут — `supabase.auth.signOut`
+### Phase 1 — Auth ✅
+- [x] `cd frontend && npm i @supabase/supabase-js`
+- [x] `frontend/src/lib/supabase.ts` — клиент
+- [x] `frontend/src/lib/auth.ts` — `useSession` хук + `signInWithGoogle` / `signInAnonymously` / `signOut`, mock-режим через `VITE_DEV_AUTH=mock`
+- [x] `Login.tsx` → 2 кнопки: «войти через Google» (filled) + «попробовать без регистрации» (outlined)
+- [x] DevSelect удалён, dev-кнопка в Dashboard заменена на «выйти»
+- [x] Session-listener в Layout через `supabase.auth.onAuthStateChange`
 
-### Phase 2 — Чтение данных (1 день)
-- Selectors в `WorkoutsContext` переписываются как async `useEffect`/TanStack Query
-- Reducer становится тонким кэшем (или удаляется в пользу TanStack Query — решим)
-- Loading-states: skeleton/spinner на Home, Workouts list, Exercises list
-- Empty-states: «нет упражнений», «нет тренировок» — уже есть, проверим что переживут реальные данные
+### Phase 2 — Чтение данных ✅
+- [x] `frontend/src/lib/queries.ts` — `fetchHydration()` параллельно тянет exercises, workouts (с join `workout_exercises` + `exercises`), profile (current_workout_id). Мапперы snake_case → camelCase
+- [x] `WorkoutsContext`: новые actions `hydrate` и `reset`, поле `hydrated`. Initial state пустой в реальном режиме, seed только в mock
+- [x] `Layout`: `useEffect` на `userId` — при логине дёргает hydration, при logout dispatch `reset`. Error-state при ошибке загрузки. Пустой layout пока `state.hydrated === false`
+- [x] Selectors (`useActiveWorkouts`, `useCurrentWorkout`, etc.) остались без изменений — компоненты страниц переписывать не пришлось
 
-### Phase 3 — Запись (0.5 дня)
-- Все мутации reducer-actions → Supabase queries:
-  - `add-workout` → `workouts.insert`
-  - `update-workout` → `workouts.update` + sync workout_exercises (replace по position)
-  - `archive-workout` → `workouts.update({ is_archived: true })`
-  - `delete-workout` → `workouts.delete`
-  - `add-exercise` → `exercises.insert`
-  - `update-exercise` → `exercises.update`
-  - `add-exercise-to-workout` → `workout_exercises.insert`
-  - `set-current` → `profiles.update({ current_workout_id })`
-- Optimistic updates (TanStack mutation onMutate) — UI не дёргается
+Решение: reducer оставили, TanStack Query не вводим (пока не появится сложный кэш с инвалидацией). Phase 3 — мутации — будет добавлять `await supabase.from(...).insert()` ПЕРЕД dispatch.
+
+### Phase 3 — Запись ✅
+- [x] `queries.ts.persistAction()` — переключает по type и пишет в Supabase. Мапперы `workoutToRow` / `exerciseToRow`, хелпер `syncWorkoutExercises` (replace по position для update-workout / add-workout с упражнениями)
+- [x] В `WorkoutsContext` обёртка `dispatch`: после `rawDispatch` (optimistic UI) вызывает `persistAction` fire-and-forget. На ошибку — `console.error` (без rollback пока, отложено в Phase 4)
+- [x] `set-current` диспатчится при старте сессии (helper `startSession` в Layout)
+- [x] Mock-режим обходит persist полностью (флаг `IS_MOCK` в queries.ts)
+- [ ] **TODO Phase 4:** rollback + user-visible toast при ошибке записи
 
 ### Phase 4 — Sessions + sets (1–2 дня, позже)
 - Новые таблицы `sessions`, `workout_sets`

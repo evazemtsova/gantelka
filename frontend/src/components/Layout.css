@@ -1,7 +1,7 @@
 :root {
   /* Colours */
   --accent: #d8ff3b;
-  --accent-dark: var(--accent-dark);
+  --accent-dark: #abd600;
   --bg: #fbf9f8;
   --bg-dark: #0f0f0f;
   --text: #000;

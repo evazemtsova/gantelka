@@ -122,7 +122,7 @@ export function CreateWorkoutScreen({ initial, onBack, onSave }: CreateWorkoutSc
           flex
           onClick={() =>
             onSave({
-              id:        initial?.id ?? String(Date.now()),
+              id:        initial?.id ?? crypto.randomUUID(),
               name:      name.trim() || 'Без названия',
               date:      initial?.date ?? 'нет даты',
               exercises: items.map(item => item.ex),

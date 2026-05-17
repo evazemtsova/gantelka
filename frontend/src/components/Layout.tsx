@@ -1,15 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Dashboard from '../pages/Dashboard';
 import Exercises from '../pages/exercises/Exercises';
 import Home from '../pages/Home';
-import DevSelect from '../pages/DevSelect';
 import Login from '../pages/Login';
 import Progress from '../pages/Progress';
 import WorkoutSession from '../pages/WorkoutSession';
 import Workouts from '../pages/workouts/Workouts';
 import { WorkoutDetailScreen } from '../pages/workouts/WorkoutDetail';
+import { useSession } from '../lib/auth';
+import { fetchHydration } from '../lib/queries';
 import { useWorkouts } from '../store/WorkoutsContext';
 import './Layout.css';
+
+const IS_MOCK = import.meta.env.VITE_DEV_AUTH === 'mock';
 
 type Page = 'main' | 'analytics' | 'profile';
 type MainView = 'home' | 'exercises' | 'workouts';
@@ -59,17 +62,51 @@ const NAV_ITEMS: { id: Page; label: string; Icon: React.ComponentType<{ active?:
   { id: 'profile', label: 'Профиль', Icon: ProfileIcon },
 ];
 
-const TRIAL_WORKOUT_ID = 'w1';
-
 export default function Layout() {
   const { state, dispatch } = useWorkouts();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasPickedMode, setHasPickedMode] = useState(false);
+  const { session, loading: authLoading } = useSession();
   const [page, setPage] = useState<Page>('main');
   const [mainView, setMainView] = useState<MainView>('home');
   const [hideNav, setHideNav] = useState(false);
   const [sessionWorkoutId, setSessionWorkoutId] = useState<string | null>(null);
   const [previewWorkoutId, setPreviewWorkoutId] = useState<string | null>(null);
+  const [hydrationError, setHydrationError] = useState<string | null>(null);
+
+  function startSession(workoutId: string) {
+    dispatch({ type: 'set-current', id: workoutId });
+    setSessionWorkoutId(workoutId);
+  }
+
+  const userId = session?.user?.id ?? null;
+
+  useEffect(() => {
+    if (IS_MOCK) return;
+    if (!userId) {
+      dispatch({ type: 'reset' });
+      setHydrationError(null);
+      return;
+    }
+    let cancelled = false;
+    setHydrationError(null);
+    fetchHydration().then(
+      (data) => {
+        if (cancelled) return;
+        dispatch({
+          type: 'hydrate',
+          exercises: data.exercises,
+          workouts: data.workouts,
+          currentWorkoutId: data.currentWorkoutId,
+        });
+      },
+      (err: unknown) => {
+        if (cancelled) return;
+        const msg = err instanceof Error ? err.message : 'Не удалось загрузить данные';
+        console.error('hydration failed', err);
+        setHydrationError(msg);
+      },
+    );
+    return () => { cancelled = true; };
+  }, [userId, dispatch]);
 
   function handleTabClick(id: Page) {
     setPage(id);
@@ -77,36 +114,35 @@ export default function Layout() {
     setHideNav(false);
   }
 
-  function pickMode(workoutId: string | null) {
-    dispatch({ type: 'set-current', id: workoutId });
-    setPage('main');
-    setMainView('home');
-    setHideNav(false);
-    setSessionWorkoutId(null);
-    setHasPickedMode(true);
+  if (authLoading) {
+    return <div className="layout" />;
   }
 
-  if (!isAuthenticated) {
+  if (!session) {
     return (
       <div className="layout">
         <div className="content">
-          <Login onLogin={() => setIsAuthenticated(true)} />
+          <Login />
         </div>
       </div>
     );
   }
 
-  if (!hasPickedMode) {
+  if (hydrationError) {
     return (
       <div className="layout">
-        <div className="content">
-          <DevSelect
-            onNewbie={() => pickMode(null)}
-            onReturning={() => pickMode(TRIAL_WORKOUT_ID)}
-          />
+        <div className="content" style={{ padding: '36px 24px', textAlign: 'center' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 24, textTransform: 'uppercase' }}>
+            ошибка загрузки
+          </p>
+          <p style={{ marginTop: 16, color: 'var(--text-muted)' }}>{hydrationError}</p>
         </div>
       </div>
     );
+  }
+
+  if (!state.hydrated) {
+    return <div className="layout" />;
   }
 
   if (sessionWorkoutId) {
@@ -146,7 +182,7 @@ export default function Layout() {
             isArchived={false}
             onBack={() => setPreviewWorkoutId(null)}
             onStart={() => {
-              setSessionWorkoutId(previewWorkout.id);
+              startSession(previewWorkout.id);
               setPreviewWorkoutId(null);
             }}
           />
@@ -177,11 +213,11 @@ export default function Layout() {
           <Workouts
             onShowSubPage={() => setHideNav(true)}
             onHideSubPage={() => setHideNav(false)}
-            onStartSession={(id) => setSessionWorkoutId(id)}
+            onStartSession={startSession}
           />
         )}
         {page === 'analytics' && <Progress />}
-        {page === 'profile' && <Dashboard onGoToDevScreen={() => setHasPickedMode(false)} />}
+        {page === 'profile' && <Dashboard />}
       </div>
       {!hideNav && (
         <nav className="bottom-nav">

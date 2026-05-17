@@ -1,4 +1,5 @@
 import { Button } from '../components/ui/Button';
+import { signInAnonymously, signInWithGoogle } from '../lib/auth';
 import './Login.css';
 
 function GantelkaLogo() {
@@ -33,11 +34,7 @@ const FEATURES = [
   { num: '04', label: 'синхронизация' },
 ];
 
-interface Props {
-  onLogin: () => void;
-}
-
-export default function Login({ onLogin }: Props) {
+export default function Login() {
   return (
     <div className="login">
       <section className="login__hero">
@@ -49,9 +46,17 @@ export default function Login({ onLogin }: Props) {
           Персональный тренировочный блокнот&nbsp;-{' '}
           <span className="login__highlight">системный подход</span>
         </p>
-        <div className="login__cta">
-          <Button variant="filled" fullWidth icon={<LoginArrowIcon />} onClick={onLogin}>
-            войти через google
+        <div className="login__cta-stack">
+          <Button
+            variant="filled"
+            fullWidth
+            icon={<LoginArrowIcon />}
+            onClick={signInWithGoogle}
+          >
+            войти через Google
+          </Button>
+          <Button variant="outlined" fullWidth onClick={signInAnonymously}>
+            без регистрации
           </Button>
         </div>
       </section>

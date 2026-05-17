@@ -14,7 +14,7 @@
 ## Главные архитектурные решения
 
 ### 1. Нет роутера
-Вся навигация — `useState` в [Layout.tsx](../frontend/src/components/Layout.tsx). 3 таба (главная/сводка/профиль) + early-return ветки для оверлеев (Login, DevSelect, WorkoutSession, превью). Внутри табов — собственный `view` state для sub-screens (например, Workouts: list / archive / create / detail / edit).
+Вся навигация — `useState` в [Layout.tsx](../frontend/src/components/Layout.tsx). 3 таба (главная/сводка/профиль) + early-return ветки для оверлеев (Login, WorkoutSession, превью). Внутри табов — собственный `view` state для sub-screens (например, Workouts: list / archive / create / detail / edit).
 
 **Почему:** для PWA без deep-link это проще. Если позже понадобится share-by-URL — добавим react-router без переписывания страниц.
 
@@ -65,9 +65,8 @@ frontend/                      — React-приложение
         SortableItem / Dropdown / ExerciseInfo / icons
     pages/
       Home.tsx                 — главная (2 состояния)
-      Login.tsx                — лендинг
-      DevSelect.tsx            — времянка (удалить перед запуском)
-      Dashboard.tsx            — заглушка профиля
+      Login.tsx                — лендинг (Google OAuth + Anonymous)
+      Dashboard.tsx            — профиль (sign-out)
       Progress.tsx             — заглушка сводки
       WorkoutSession.tsx       — сессия (3 шага: session / date / success)
       exercises/               — feature-папка
@@ -108,15 +107,19 @@ ExerciseType    'strength'|'cardio'|'stretching'
 ## Навигационный граф
 
 ```
-Login ──▶ DevSelect ──▶ Home (empty / with-workout)
-                          │
-                          ├── "начать пробную"   ─▶ Workouts tab
-                          ├── "начать тренировку" ─▶ WorkoutDetail preview ─▶ запустить ─▶ WorkoutSession
-                          ├── "упражнения"        ─▶ Exercises tab
-                          └── "тренировки"        ─▶ Workouts tab
+Login ──▶ Home (empty / with-workout)
+   │       │
+   │       ├── "начать пробную"   ─▶ Workouts tab
+   │       ├── "начать тренировку" ─▶ WorkoutDetail preview ─▶ запустить ─▶ WorkoutSession
+   │       ├── "упражнения"        ─▶ Exercises tab
+   │       └── "тренировки"        ─▶ Workouts tab
+   │
+   ├── "войти через Google" ─▶ supabase.auth.signInWithOAuth
+   └── "без регистрации" ─▶ supabase.auth.signInAnonymously
 
 Workouts ─▶ detail-active ─▶ запустить ─▶ WorkoutSession
 WorkoutSession ─▶ дата следующей ─▶ "УРА!" ─▶ Home
+Profile ─▶ "выйти" ─▶ supabase.auth.signOut ─▶ Login
 ```
 
 ## Известные ограничения
@@ -124,7 +127,6 @@ WorkoutSession ─▶ дата следующей ─▶ "УРА!" ─▶ Home
 - Нет деструктивных подтверждений (back во время сессии теряет введённые подходы)
 - Нет offline-кеша (PWA пока без service worker)
 - Подходы в сессии — string, не валидируются на число
-- DevSelect виден в проде — убрать через env-флаг или удалить
 - SVG-иконки в Layout.tsx с хардкодом цвета `#ABD600` (inline SVG не подхватывает CSS-переменные)
 
 ## Что готово для бэка
