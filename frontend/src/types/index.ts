@@ -36,10 +36,10 @@ export interface Workout {
   isTrial?: boolean;
 }
 
-/** Подход в снимке истории — числа уже как пользователь ввёл (строкой). */
+/** Подход в снимке истории. null = поле не введено пользователем. */
 export interface SessionSet {
-  reps: string;
-  weight: string;
+  reps: number | null;
+  weight: number | null;
 }
 
 /** Упражнение в снимке истории — статичный снимок имени/группы. */

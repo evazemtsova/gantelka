@@ -15,10 +15,10 @@ function formatFullDate(iso: string): string {
   return `${d.getDate()} ${RU_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function formatSet(reps: string, weight: string): string {
+function formatSet(reps: number | null, weight: number | null): string {
   // reps без веса = bodyweight (валидно). Вес без reps = непонятно что выполнил.
-  if (!reps) return '—';
-  if (!weight) return `${reps} раз`;
+  if (reps === null) return '—';
+  if (weight === null) return `${reps} раз`;
   return `${reps} × ${weight} кг`;
 }
 

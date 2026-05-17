@@ -6,6 +6,16 @@
 
 ## 2026-05-18
 
+### session_sets: reps/weight теперь numeric, не text
+- Миграция `20260518100000_session_sets_numeric.sql`: `alter column ... type numeric` с safe-cast (нечисловые значения, которых не должно быть → null).
+- TS-тип `SessionSet`: `reps: number | null, weight: number | null`. null = поле не введено пользователем.
+- `WorkoutSession` парсит локальный string-стейт инпутов в `number | null` через `Number()` + `Number.isFinite` при сборке snapshot. Фильтр «оба null → выкинуть подход» сохраняется.
+- `queries.ts` маппер: хелпер `toNum()` нормализует ответ PostgREST (numeric может прийти как number или string).
+- `SessionDetail.formatSet` принимает `number | null`. Поведение не изменилось.
+- **Выигрыш:** аналитика (Сводка / графики / PR / тоннаж) теперь делается без safe-парсинга — числа честные. Память про костыли удалена.
+
+**TODO юзеру:** применить миграцию `backend/supabase/migrations/20260518100000_session_sets_numeric.sql` в Supabase SQL Editor.
+
 ### Чистка документации: 9 → 7
 - Удалены `DESIGN_SYSTEM.md` (TZ миграции выполнена в `e9c5023`, остальное дублировало код) и `BACKEND_PLAN.md` (фазы 1–3 done, Phase 4 partial — pending пункты переехали в TDR «Известные ограничения»).
 - В `FRONTEND.md` добавлена секция «Визуальный язык» — принципы (brutalist, mono+sans, UPPERCASE, no modals/radius), семантика акцентов (`--accent` = CTA, `--accent-dark` = done/active), список «что НЕ делать». Это уникальный контент DESIGN_SYSTEM, не дублирующий код.

@@ -114,11 +114,16 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
             disabled={!canConfirmDate}
             onClick={() => {
               if (!workout) return;
+              const parseNum = (v: string): number | null => {
+                if (v === '') return null;
+                const n = Number(v);
+                return Number.isFinite(n) ? n : null;
+              };
               const snapshot = exercises
                 .map((ex) => {
                   const sets = (setsByEx[ex.id] || [])
-                    .filter((s) => s.reps !== '' || s.weight !== '')
-                    .map((s) => ({ reps: s.reps, weight: s.weight }));
+                    .map((s) => ({ reps: parseNum(s.reps), weight: parseNum(s.weight) }))
+                    .filter((s) => s.reps !== null || s.weight !== null);
                   return { ex, sets };
                 })
                 .filter(({ ex, sets }) => sets.length > 0 || doneIds.has(ex.id))

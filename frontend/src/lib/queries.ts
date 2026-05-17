@@ -37,8 +37,16 @@ interface ProfileRow {
 
 interface SessionSetRow {
   position: number;
-  reps: string | null;
-  weight: string | null;
+  // PostgREST для numeric может вернуть либо number, либо string (precision-safety).
+  // Нормализуем через Number() в маппере.
+  reps: number | string | null;
+  weight: number | string | null;
+}
+
+function toNum(v: number | string | null | undefined): number | null {
+  if (v === null || v === undefined || v === '') return null;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
 interface SessionExerciseRow {
@@ -91,7 +99,7 @@ function toSession(row: SessionRow): Session {
       sets: (se.session_sets ?? [])
         .slice()
         .sort((a, b) => a.position - b.position)
-        .map((s) => ({ reps: s.reps ?? '', weight: s.weight ?? '' })),
+        .map((s) => ({ reps: toNum(s.reps), weight: toNum(s.weight) })),
     }));
   return {
     id: row.id,
@@ -378,8 +386,8 @@ export async function persistAction(action: PersistableAction, ctx: PersistConte
       const setRows: Array<{
         session_exercise_id: string;
         position: number;
-        reps: string;
-        weight: string;
+        reps: number | null;
+        weight: number | null;
       }> = [];
       for (const se of seData ?? []) {
         const original = s.exercises[se.position];

@@ -156,7 +156,7 @@ Profile ─▶ "войти через google" (для anonymous) / "выйти" 
 
 - Нет деструктивных подтверждений (back во время сессии теряет введённые подходы)
 - Нет offline-кеша (PWA пока без service worker)
-- Подходы в сессии — string, не валидируются на число
+- Подходы в сессии — `numeric` в БД, `number | null` на фронте. Null = поле не введено
 - `LogoFull` SVG в `icons.tsx` содержит хардкод `fill="#D8FF3B"` (допустимо: `currentColor` не работает для fill отдельных путей многоцветного SVG)
 - **persistAction errors:** при сбое записи в Supabase сейчас только `console.error`, нет rollback'а и user-visible toast. Optimistic UI остаётся ложно-успешным
 - **Сводка (Progress.tsx) — заглушка.** Когда появятся графики (вес/тоннаж по упражнению во времени, частота тренировок) — там же
