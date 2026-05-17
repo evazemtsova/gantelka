@@ -142,6 +142,7 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
                   workoutId: workout.id,
                   workoutName: workout.name,
                   exerciseCount: snapshot.length || workout.exercises.length,
+                  nextWorkoutId,
                   nextWorkoutDate: nextDate || null,
                   finishedAt: new Date().toISOString(),
                   exercises: snapshot,
@@ -175,7 +176,7 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
         </div>
         <div className="session__footer session__footer--row">
           <Button variant="outlined" flex onClick={onFinish}>на главную</Button>
-          <Button variant="outlined" flex onClick={() => { onGoToProgress?.(); onFinish(); }}>
+          <Button variant="outlined" flex onClick={() => onGoToProgress?.()}>
             сводка
           </Button>
         </div>
@@ -223,12 +224,26 @@ export default function WorkoutSession({ workoutId, onBack, onFinish, onGoToProg
   }
 
   function toggleDone(exId: string) {
+    const wasAlreadyDone = doneIds.has(exId);
     setDoneIds((prev) => {
       const next = new Set(prev);
       if (next.has(exId)) next.delete(exId);
       else next.add(exId);
       return next;
     });
+    // Если только что отметили как «готово» — свернуть текущее и раскрыть
+    // следующее по списку, которое ещё не done. Если такого нет — просто свернуть.
+    if (wasAlreadyDone) return;
+    const idx = exercises.findIndex((e) => e.id === exId);
+    const nextEx = exercises.slice(idx + 1).find((e) => !doneIds.has(e.id));
+    if (nextEx) {
+      setSetsByEx((prev) =>
+        prev[nextEx.id] ? prev : { ...prev, [nextEx.id]: [newEmptySet()] },
+      );
+      setActiveId(nextEx.id);
+    } else {
+      setActiveId(null);
+    }
   }
 
   return (

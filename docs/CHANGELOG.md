@@ -6,6 +6,21 @@
 
 ## 2026-05-18
 
+### Активная сессия: «готово» автоматически переходит к следующему упражнению
+- В `WorkoutSession` после клика «готово» (если упражнение НЕ было уже выполнено) текущее сворачивается, и раскрывается следующее по списку, у которого нет статуса «готово». Если такого нет — текущее просто сворачивается.
+- Снятие галки «готово» (повторный клик) — не двигает фокус, оставляет упражнение раскрытым.
+
+### Fix: кнопка «сводка» на success-экране сессии вела на главную
+- `onFinish()` вызывался сразу после `onGoToProgress()` — затирал `page='analytics'` обратно в `'main'/'home'`. `onGoToProgress` сам уже закрывает сессию, второй вызов был избыточным.
+
+### Сводка: данные последней + следующей тренировки
+- Миграция `20260518110000_sessions_next_workout_id.sql`: новая колонка `sessions.next_workout_id` (FK на `workouts.id`, `on delete set null`). Раньше сохранялась только дата, теперь и имя следующей.
+- `Session.nextWorkoutId: string | null` в TS-типе. `WorkoutSession` диспатчит в action, `queries.ts` пишет/маппит.
+- `Progress.tsx` переписан с заглушки: показывает последнюю тренировку (имя, полная дата, тоннаж/подходы/повторы агрегатами по `session.exercises[*].sets`) и следующую (имя через lookup workouts по `nextWorkoutId`, дата). Если завершённых тренировок нет — EmptyState. Если следующая не запланирована — секция скрыта.
+- Метрики считаются: `tonnage = Σ reps × weight` (только сеты где оба числовых), `setsCount` = все сохранённые подходы, `repsCount = Σ reps` (где не null).
+
+**TODO юзеру:** применить миграцию `backend/supabase/migrations/20260518110000_sessions_next_workout_id.sql` в Supabase SQL Editor.
+
 ### session_sets: reps/weight теперь numeric, не text
 - Миграция `20260518100000_session_sets_numeric.sql`: `alter column ... type numeric` с safe-cast (нечисловые значения, которых не должно быть → null).
 - TS-тип `SessionSet`: `reps: number | null, weight: number | null`. null = поле не введено пользователем.

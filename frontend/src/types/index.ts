@@ -58,6 +58,7 @@ export interface Session {
   workoutId: string | null;       // null если шаблон удалён
   workoutName: string;            // снимок имени на момент завершения
   exerciseCount: number;
+  nextWorkoutId: string | null;   // ID следующей запланированной (null если шаблон удалён)
   nextWorkoutDate: string | null;
   finishedAt: string;             // ISO
   exercises: SessionExercise[];   // снимок выполненных упражнений с подходами

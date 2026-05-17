@@ -67,6 +67,7 @@ interface SessionRow {
   workout_id: string | null;
   workout_name: string;
   exercise_count: number;
+  next_workout_id: string | null;
   next_workout_date: string | null;
   finished_at: string;
   session_exercises: SessionExerciseRow[];
@@ -106,6 +107,7 @@ function toSession(row: SessionRow): Session {
     workoutId: row.workout_id,
     workoutName: row.workout_name,
     exerciseCount: row.exercise_count,
+    nextWorkoutId: row.next_workout_id,
     nextWorkoutDate: row.next_workout_date,
     finishedAt: row.finished_at,
     exercises,
@@ -366,6 +368,7 @@ export async function persistAction(action: PersistableAction, ctx: PersistConte
         workout_id: s.workoutId,
         workout_name: s.workoutName,
         exercise_count: s.exerciseCount,
+        next_workout_id: s.nextWorkoutId,
         next_workout_date: s.nextWorkoutDate,
         finished_at: s.finishedAt,
       });
