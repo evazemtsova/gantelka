@@ -4,15 +4,9 @@ import { useSession } from '../lib/auth';
 import { useCurrentWorkout, useSessions } from '../store/WorkoutsContext';
 import './Home.css';
 
-interface GoogleMeta {
-  full_name?: string;
-  name?: string;
-}
-
-function firstName(meta: GoogleMeta): string | null {
-  const raw = meta.full_name || meta.name;
-  if (!raw) return null;
-  const first = raw.trim().split(/\s+/)[0];
+function firstName(displayName: string | null | undefined): string | null {
+  if (!displayName) return null;
+  const first = displayName.trim().split(/\s+/)[0];
   return first ? first.toLowerCase() : null;
 }
 
@@ -56,7 +50,7 @@ export default function Home({
   const hasWorkout = currentWorkout !== null;
 
   const { session } = useSession();
-  const name = firstName((session?.user?.user_metadata ?? {}) as GoogleMeta);
+  const name = firstName(session?.user?.displayName);
   const greeting = name ? `привет, ${name}` : 'привет!';
 
   if (!hasWorkout) {

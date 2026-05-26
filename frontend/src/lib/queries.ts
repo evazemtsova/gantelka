@@ -1,131 +1,131 @@
-import type { Exercise, ExerciseType, MuscleGroup, Session, Workout } from '../types';
-import { supabase } from './supabase';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  writeBatch,
+  arrayUnion,
+  type DocumentData,
+} from 'firebase/firestore';
+import { auth, db } from './firebase';
+import type { Exercise, ExerciseType, MuscleGroup, Session, SessionExercise, Workout } from '../types';
+import { SEED_EXERCISES, SEED_WORKOUTS } from '../data/exercises';
 
 const IS_MOCK = import.meta.env.VITE_DEV_AUTH === 'mock';
 
-// ─── Row shapes (snake_case как в БД) ─────────────────────────────────────────
+// ─── Collection helpers ───────────────────────────────────────────────────────
 
-interface ExerciseRow {
-  id: string;
-  user_id: string;
-  name: string;
-  muscle_group: MuscleGroup;
-  exercise_type: ExerciseType;
-  is_custom: boolean;
-  description: string | null;
-  created_at: string;
+function getUid(): string {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('Not authenticated');
+  return uid;
 }
 
-interface WorkoutRow {
-  id: string;
-  user_id: string;
-  name: string;
-  date: string | null;
-  is_archived: boolean;
-  is_trial: boolean;
-  created_at: string;
-  workout_exercises: Array<{
-    position: number;
-    exercises: ExerciseRow;
-  }>;
-}
+const userRef     = (uid: string) => doc(db, 'users', uid);
+const exercisesCol = (uid: string) => collection(db, 'users', uid, 'exercises');
+const workoutsCol  = (uid: string) => collection(db, 'users', uid, 'workouts');
+const sessionsCol  = (uid: string) => collection(db, 'users', uid, 'sessions');
 
-interface ProfileRow {
-  id: string;
-  current_workout_id: string | null;
-}
+// ─── Mappers doc → domain ─────────────────────────────────────────────────────
 
-interface SessionSetRow {
-  position: number;
-  // PostgREST для numeric может вернуть либо number, либо string (precision-safety).
-  // Нормализуем через Number() в маппере.
-  reps: number | string | null;
-  weight: number | string | null;
-}
-
-function toNum(v: number | string | null | undefined): number | null {
-  if (v === null || v === undefined || v === '') return null;
-  const n = typeof v === 'number' ? v : Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-interface SessionExerciseRow {
-  position: number;
-  exercises: {
-    id: string;
-    name: string;
-    muscle_group: MuscleGroup;
-    exercise_type: ExerciseType;
-    is_custom: boolean;
-  } | null;
-  session_sets: SessionSetRow[];
-}
-
-interface SessionRow {
-  id: string;
-  user_id: string;
-  workout_id: string | null;
-  workout_name: string;
-  exercise_count: number;
-  next_workout_id: string | null;
-  next_workout_date: string | null;
-  finished_at: string;
-  session_exercises: SessionExerciseRow[];
-}
-
-// ─── Mappers snake → camel ────────────────────────────────────────────────────
-
-function toExercise(row: ExerciseRow): Exercise {
+function docToExercise(id: string, data: DocumentData): Exercise {
   return {
-    id: row.id,
-    name: row.name,
-    muscleGroup: row.muscle_group,
-    exerciseType: row.exercise_type,
-    isCustom: row.is_custom,
-    description: row.description ?? undefined,
+    id,
+    name: data.name as string,
+    muscleGroup: data.muscleGroup as MuscleGroup,
+    exerciseType: data.exerciseType as ExerciseType,
+    isCustom: (data.isCustom as boolean | undefined) ?? false,
+    description: (data.description as string | null | undefined) ?? undefined,
   };
 }
 
-function toSession(row: SessionRow): Session {
-  const exercises = (row.session_exercises ?? [])
-    .filter((se) => se.exercises !== null)
-    .slice()
-    .sort((a, b) => a.position - b.position)
-    .map((se) => ({
-      id: se.exercises!.id,
-      name: se.exercises!.name,
-      muscleGroup: se.exercises!.muscle_group,
-      exerciseType: se.exercises!.exercise_type,
-      isCustom: se.exercises!.is_custom,
-      sets: (se.session_sets ?? [])
-        .slice()
-        .sort((a, b) => a.position - b.position)
-        .map((s) => ({ reps: toNum(s.reps), weight: toNum(s.weight) })),
-    }));
+function docToWorkout(id: string, data: DocumentData, exercisesById: Map<string, Exercise>): Workout {
+  const exerciseIds: string[] = (data.exerciseIds as string[] | undefined) ?? [];
   return {
-    id: row.id,
-    workoutId: row.workout_id,
-    workoutName: row.workout_name,
-    exerciseCount: row.exercise_count,
-    nextWorkoutId: row.next_workout_id,
-    nextWorkoutDate: row.next_workout_date,
-    finishedAt: row.finished_at,
-    exercises,
+    id,
+    name: data.name as string,
+    date: (data.date as string | null | undefined) ?? '',
+    isArchived: (data.isArchived as boolean | undefined) ?? false,
+    isTrial: (data.isTrial as boolean | undefined) ?? false,
+    exercises: exerciseIds
+      .map((eid) => exercisesById.get(eid))
+      .filter((e): e is Exercise => e !== undefined),
   };
 }
 
-function toWorkout(row: WorkoutRow): Workout {
+function docToSession(id: string, data: DocumentData): Session {
   return {
-    id: row.id,
-    name: row.name,
-    date: row.date ?? '',
-    isArchived: row.is_archived,
-    isTrial: row.is_trial,
-    exercises: row.workout_exercises
-      .slice()
-      .sort((a, b) => a.position - b.position)
-      .map((we) => toExercise(we.exercises)),
+    id,
+    workoutId: (data.workoutId as string | null | undefined) ?? null,
+    workoutName: data.workoutName as string,
+    exerciseCount: data.exerciseCount as number,
+    nextWorkoutId: (data.nextWorkoutId as string | null | undefined) ?? null,
+    nextWorkoutDate: (data.nextWorkoutDate as string | null | undefined) ?? null,
+    finishedAt: data.finishedAt as string,
+    exercises: (data.exercises as SessionExercise[] | undefined) ?? [],
   };
+}
+
+// ─── Mappers domain → doc ─────────────────────────────────────────────────────
+
+function exerciseToDoc(e: Exercise) {
+  return {
+    name: e.name,
+    muscleGroup: e.muscleGroup,
+    exerciseType: e.exerciseType,
+    isCustom: e.isCustom ?? false,
+    description: e.description ?? null,
+  };
+}
+
+function workoutToDoc(w: Workout) {
+  return {
+    name: w.name,
+    date: w.date || null,
+    isArchived: w.isArchived ?? false,
+    isTrial: w.isTrial ?? false,
+    exerciseIds: w.exercises.map((e) => e.id),
+  };
+}
+
+function sessionToDoc(s: Session) {
+  return {
+    workoutId: s.workoutId,
+    workoutName: s.workoutName,
+    exerciseCount: s.exerciseCount,
+    nextWorkoutId: s.nextWorkoutId,
+    nextWorkoutDate: s.nextWorkoutDate,
+    finishedAt: s.finishedAt,
+    exercises: s.exercises.map((ex) => ({
+      id: ex.id,
+      name: ex.name,
+      muscleGroup: ex.muscleGroup,
+      exerciseType: ex.exerciseType,
+      isCustom: ex.isCustom ?? false,
+      sets: ex.sets.map((set) => ({ reps: set.reps, weight: set.weight })),
+    })),
+  };
+}
+
+// ─── New user seed ────────────────────────────────────────────────────────────
+
+async function seedNewUser(uid: string): Promise<void> {
+  const batch = writeBatch(db);
+  batch.set(userRef(uid), { currentWorkoutId: null });
+  for (const ex of SEED_EXERCISES) {
+    batch.set(doc(exercisesCol(uid), ex.id), exerciseToDoc(ex));
+  }
+  for (const wk of SEED_WORKOUTS) {
+    batch.set(doc(workoutsCol(uid), wk.id), workoutToDoc(wk));
+  }
+  await batch.commit();
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -137,80 +137,51 @@ export interface HydrationData {
   currentWorkoutId: string | null;
 }
 
-/** Загружает всё, что нужно для старта app: упражнения, тренировки, сессии, current. */
 export async function fetchHydration(): Promise<HydrationData> {
-  const [exercisesRes, workoutsRes, sessionsRes, profileRes] = await Promise.all([
-    supabase.from('exercises').select('*').order('created_at'),
-    supabase
-      .from('workouts')
-      .select('*, workout_exercises(position, exercises(*))')
-      .order('created_at'),
-    supabase
-      .from('sessions')
-      .select(`
-        *,
-        session_exercises(
-          position,
-          exercises(id, name, muscle_group, exercise_type, is_custom),
-          session_sets(position, reps, weight)
-        )
-      `)
-      .order('finished_at', { ascending: false })
-      .limit(50),
-    supabase.from('profiles').select('id, current_workout_id').single(),
+  const uid = getUid();
+  const profileSnap = await getDoc(userRef(uid));
+
+  if (!profileSnap.exists()) {
+    await seedNewUser(uid);
+    return { exercises: SEED_EXERCISES, workouts: SEED_WORKOUTS, sessions: [], currentWorkoutId: null };
+  }
+
+  const [exercisesSnap, workoutsSnap, sessionsSnap] = await Promise.all([
+    getDocs(exercisesCol(uid)),
+    getDocs(workoutsCol(uid)),
+    getDocs(query(sessionsCol(uid), orderBy('finishedAt', 'desc'), limit(50))),
   ]);
 
-  if (exercisesRes.error) throw exercisesRes.error;
-  if (workoutsRes.error) throw workoutsRes.error;
-  if (sessionsRes.error) throw sessionsRes.error;
-  if (profileRes.error) throw profileRes.error;
+  const exercises = exercisesSnap.docs.map((d) => docToExercise(d.id, d.data()));
+  const exercisesById = new Map(exercises.map((e) => [e.id, e]));
+  const workouts = workoutsSnap.docs.map((d) => docToWorkout(d.id, d.data(), exercisesById));
+  const sessions = sessionsSnap.docs.map((d) => docToSession(d.id, d.data()));
+  const currentWorkoutId = (profileSnap.data()?.currentWorkoutId as string | null | undefined) ?? null;
 
-  return {
-    exercises: (exercisesRes.data as ExerciseRow[]).map(toExercise),
-    workouts: (workoutsRes.data as WorkoutRow[]).map(toWorkout),
-    sessions: (sessionsRes.data as SessionRow[]).map(toSession),
-    currentWorkoutId: (profileRes.data as ProfileRow).current_workout_id,
-  };
+  return { exercises, workouts, sessions, currentWorkoutId };
 }
 
-/**
- * Подгружает порцию сессий старше указанной даты (cursor-based pagination).
- * `beforeIso` — finished_at последнего загруженного элемента; `null` для первой страницы.
- */
-export async function fetchSessionsPage(beforeIso: string | null, limit: number): Promise<Session[]> {
-  let query = supabase
-    .from('sessions')
-    .select(`
-      *,
-      session_exercises(
-        position,
-        exercises(id, name, muscle_group, exercise_type, is_custom),
-        session_sets(position, reps, weight)
-      )
-    `)
-    .order('finished_at', { ascending: false })
-    .limit(limit);
-  if (beforeIso) {
-    query = query.lt('finished_at', beforeIso);
-  }
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data as SessionRow[]).map(toSession);
+export async function fetchSessionsPage(beforeIso: string | null, pageLimit: number): Promise<Session[]> {
+  const uid = getUid();
+  const col = sessionsCol(uid);
+  const q = beforeIso
+    ? query(col, orderBy('finishedAt', 'desc'), startAfter(beforeIso), limit(pageLimit))
+    : query(col, orderBy('finishedAt', 'desc'), limit(pageLimit));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => docToSession(d.id, d.data()));
 }
-
 
 // ─── Persist (write) ──────────────────────────────────────────────────────────
 
 interface PersistContext {
   userId: string;
-  /** State до применения action — нужен для add-exercise-to-workout (position) и проверки current. */
   prevState: {
     workouts: Workout[];
     currentWorkoutId: string | null;
   };
 }
 
-type PersistableAction =
+export type PersistableAction =
   | { type: 'set-current'; id: string | null }
   | { type: 'add-workout'; workout: Workout }
   | { type: 'update-workout'; workout: Workout }
@@ -222,195 +193,54 @@ type PersistableAction =
   | { type: 'add-exercise-to-workout'; workoutId: string; exercise: Exercise }
   | { type: 'add-session'; session: Session };
 
-function workoutToRow(w: Workout, userId: string) {
-  return {
-    id: w.id,
-    user_id: userId,
-    name: w.name,
-    date: w.date || null,
-    is_archived: w.isArchived ?? false,
-    is_trial: w.isTrial ?? false,
-  };
-}
-
-function exerciseToRow(e: Exercise, userId: string) {
-  return {
-    id: e.id,
-    user_id: userId,
-    name: e.name,
-    muscle_group: e.muscleGroup,
-    exercise_type: e.exerciseType,
-    is_custom: e.isCustom ?? false,
-    description: e.description ?? null,
-  };
-}
-
-async function syncWorkoutExercises(workoutId: string, exercises: Exercise[]) {
-  const del = await supabase.from('workout_exercises').delete().eq('workout_id', workoutId);
-  if (del.error) throw del.error;
-  if (exercises.length === 0) return;
-  const rows = exercises.map((ex, i) => ({
-    workout_id: workoutId,
-    exercise_id: ex.id,
-    position: i,
-  }));
-  const ins = await supabase.from('workout_exercises').insert(rows);
-  if (ins.error) throw ins.error;
-}
-
-/**
- * Записывает action в Supabase. Возвращает promise; вызывающий
- * (middleware в Provider) ловит ошибки.
- *
- * В mock-режиме сразу возвращает — все мутации остаются локальными.
- */
 export async function persistAction(action: PersistableAction, ctx: PersistContext): Promise<void> {
   if (IS_MOCK) return;
   const { userId, prevState } = ctx;
 
   switch (action.type) {
-    case 'set-current': {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ current_workout_id: action.id })
-        .eq('id', userId);
-      if (error) throw error;
+    case 'set-current':
+      await updateDoc(userRef(userId), { currentWorkoutId: action.id });
       return;
-    }
 
-    case 'add-workout': {
-      const { error: e1 } = await supabase.from('workouts').insert(workoutToRow(action.workout, userId));
-      if (e1) throw e1;
-      if (action.workout.exercises.length > 0) {
-        await syncWorkoutExercises(action.workout.id, action.workout.exercises);
-      }
+    case 'add-workout':
+      await setDoc(doc(workoutsCol(userId), action.workout.id), workoutToDoc(action.workout));
       return;
-    }
 
-    case 'update-workout': {
-      const { error } = await supabase
-        .from('workouts')
-        .update({
-          name: action.workout.name,
-          date: action.workout.date || null,
-        })
-        .eq('id', action.workout.id);
-      if (error) throw error;
-      await syncWorkoutExercises(action.workout.id, action.workout.exercises);
+    case 'update-workout':
+      await setDoc(doc(workoutsCol(userId), action.workout.id), workoutToDoc(action.workout));
       return;
-    }
 
-    case 'archive-workout': {
-      const { error } = await supabase
-        .from('workouts')
-        .update({ is_archived: true })
-        .eq('id', action.id);
-      if (error) throw error;
+    case 'archive-workout':
+      await updateDoc(doc(workoutsCol(userId), action.id), { isArchived: true });
       if (prevState.currentWorkoutId === action.id) {
-        await supabase.from('profiles').update({ current_workout_id: null }).eq('id', userId);
+        await updateDoc(userRef(userId), { currentWorkoutId: null });
       }
       return;
-    }
 
-    case 'unarchive-workout': {
-      const { error } = await supabase
-        .from('workouts')
-        .update({ is_archived: false })
-        .eq('id', action.id);
-      if (error) throw error;
+    case 'unarchive-workout':
+      await updateDoc(doc(workoutsCol(userId), action.id), { isArchived: false });
       return;
-    }
 
-    case 'delete-workout': {
-      const { error } = await supabase.from('workouts').delete().eq('id', action.id);
-      if (error) throw error;
-      // current_workout_id → null обрабатывает FK on delete set null автоматически
+    case 'delete-workout':
+      await deleteDoc(doc(workoutsCol(userId), action.id));
       return;
-    }
 
-    case 'add-exercise': {
-      const { error } = await supabase.from('exercises').insert(exerciseToRow(action.exercise, userId));
-      if (error) throw error;
+    case 'add-exercise':
+      await setDoc(doc(exercisesCol(userId), action.exercise.id), exerciseToDoc(action.exercise));
       return;
-    }
 
-    case 'update-exercise': {
-      const { error } = await supabase
-        .from('exercises')
-        .update({
-          name: action.exercise.name,
-          muscle_group: action.exercise.muscleGroup,
-          exercise_type: action.exercise.exerciseType,
-          description: action.exercise.description ?? null,
-        })
-        .eq('id', action.exercise.id);
-      if (error) throw error;
+    case 'update-exercise':
+      await updateDoc(doc(exercisesCol(userId), action.exercise.id), exerciseToDoc(action.exercise));
       return;
-    }
 
-    case 'add-exercise-to-workout': {
-      const workout = prevState.workouts.find((w) => w.id === action.workoutId);
-      const position = workout?.exercises.length ?? 0;
-      const { error } = await supabase.from('workout_exercises').insert({
-        workout_id: action.workoutId,
-        exercise_id: action.exercise.id,
-        position,
+    case 'add-exercise-to-workout':
+      await updateDoc(doc(workoutsCol(userId), action.workoutId), {
+        exerciseIds: arrayUnion(action.exercise.id),
       });
-      if (error) throw error;
       return;
-    }
 
-    case 'add-session': {
-      const s = action.session;
-      const { error: e1 } = await supabase.from('sessions').insert({
-        id: s.id,
-        user_id: userId,
-        workout_id: s.workoutId,
-        workout_name: s.workoutName,
-        exercise_count: s.exerciseCount,
-        next_workout_id: s.nextWorkoutId,
-        next_workout_date: s.nextWorkoutDate,
-        finished_at: s.finishedAt,
-      });
-      if (e1) throw e1;
-      if (s.exercises.length === 0) return;
-
-      const seRows = s.exercises.map((ex, i) => ({
-        session_id: s.id,
-        exercise_id: ex.id,
-        position: i,
-      }));
-      const { data: seData, error: e2 } = await supabase
-        .from('session_exercises')
-        .insert(seRows)
-        .select('id, position');
-      if (e2) throw e2;
-
-      const setRows: Array<{
-        session_exercise_id: string;
-        position: number;
-        reps: number | null;
-        weight: number | null;
-      }> = [];
-      for (const se of seData ?? []) {
-        const original = s.exercises[se.position];
-        if (!original) continue;
-        original.sets.forEach((set, i) => {
-          setRows.push({
-            session_exercise_id: se.id,
-            position: i,
-            reps: set.reps,
-            weight: set.weight,
-          });
-        });
-      }
-      if (setRows.length > 0) {
-        const { error: e3 } = await supabase.from('session_sets').insert(setRows);
-        if (e3) throw e3;
-      }
+    case 'add-session':
+      await setDoc(doc(sessionsCol(userId), action.session.id), sessionToDoc(action.session));
       return;
-    }
   }
 }
-
-export type { PersistableAction };

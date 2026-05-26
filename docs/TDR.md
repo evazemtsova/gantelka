@@ -9,8 +9,8 @@
 - **@dnd-kit** (core / sortable / utilities) — drag-and-drop с поддержкой touch
 - Без state-management библиотек (Redux/Zustand/etc.) — `React.useReducer` + `Context`
 - Без роутера — навигация через `useState` в `Layout.tsx`
-- **Supabase** (Postgres + RLS + GoTrue + PostgREST) для auth и persistence; фронт обращается напрямую через `@supabase/supabase-js`
-- Хостинг: Vercel (фронт) + Supabase (БД)
+- **Firebase** (Firestore + Firebase Auth) для auth и persistence; фронт обращается напрямую через `firebase` SDK
+- Хостинг: Vercel (фронт) + Firebase (БД)
 
 ## Главные архитектурные решения
 
@@ -24,7 +24,7 @@
 
 **Почему:** один источник правды для упражнений, тренировок, сессий, текущей тренировки.
 
-**Persistence через middleware.** `dispatch` обёрнут: сначала `rawDispatch` (optimistic UI), потом fire-and-forget `persistAction(action, ctx)` пишет в Supabase. Компоненты этого не видят — продолжают вызывать `dispatch(...)` как раньше. См. [src/lib/queries.ts](../frontend/src/lib/queries.ts).
+**Persistence через middleware.** `dispatch` обёрнут: сначала `rawDispatch` (optimistic UI), потом fire-and-forget `persistAction(action, ctx)` пишет в Firestore. Компоненты этого не видят — продолжают вызывать `dispatch(...)` как раньше. См. [src/lib/queries.ts](../frontend/src/lib/queries.ts).
 
 **Когда заменить:** если появится сложный кэш с инвалидацией — ввести TanStack Query поверх существующих экшенов. Reducer останется как локальный кэш.
 
@@ -32,7 +32,7 @@
 `Exercise`, `Workout`, `WorkoutSet`, `MuscleGroup`, `ExerciseType`, `Session`, `SessionExercise`, `SessionSet`. Локальные дубли запрещены — расхождение этих типов мгновенно ломает контракт с бэком.
 
 ### 4. Seed-данные в `frontend/src/data/exercises.ts`
-`SEED_EXERCISES` и `SEED_WORKOUTS` — стартовые данные для **mock-режима** (`VITE_DEV_AUTH=mock`) и для seed-триггера в БД ([миграция initial](../backend/supabase/migrations/20260517190000_initial.sql) сеет точно те же 17 упражнений + 4 пробных тренировки). В реальном режиме `initialState` пустой, данные приходят через `fetchHydration()` при логине.
+`SEED_EXERCISES` и `SEED_WORKOUTS` — стартовые данные для **mock-режима** (`VITE_DEV_AUTH=mock`) и для автоматического сидирования новых пользователей. В реальном режиме при первом входе `fetchHydration()` обнаруживает отсутствие документа `users/{uid}` и записывает seed через `writeBatch`. В последующих сессиях — данные из Firestore.
 
 ### 5. Локализованные строки в `frontend/src/constants/labels.ts`
 `MUSCLE_LABELS_CAP`, `MUSCLE_LABELS_LOWER`, `EXERCISE_TYPE_LABELS`, `EXERCISE_PARAMS_LABELS`, `SELECTABLE_MUSCLE_GROUPS`, хелпер `exerciseMeta(ex)`. Никаких локальных словарей в компонентах.
@@ -53,7 +53,7 @@ frontend/                      — React-приложение
   package.json
   vite.config.ts
   tsconfig*.json
-  .env.example                 — VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY / VITE_DEV_AUTH
+  .env.example                 — VITE_FIREBASE_* / VITE_DEV_AUTH
   index.html
   public/
   src/
@@ -82,7 +82,7 @@ frontend/                      — React-приложение
       Home.tsx                 — главная (2 состояния + превью истории)
       Login.tsx                — лендинг (Google OAuth + Anonymous)
       Dashboard.tsx            — профиль (аватар/имя/email Google-юзера, sign-out)
-      Progress.tsx             — заглушка сводки
+      Progress.tsx             — сводка (последняя/следующая тренировка, метрики)
       WorkoutSession.tsx       — сессия (3 шага: session / date / success)
       SessionDetail.tsx        — детальный просмотр завершённой тренировки
       HistoryAll.tsx           — полный список истории с пагинацией
@@ -95,16 +95,9 @@ frontend/                      — React-приложение
         CreateWorkout, WorkoutDetail,
         Workouts.css           — один CSS на всю feature-папку
     lib/
-      supabase.ts              — клиент @supabase/supabase-js
+      firebase.ts              — инициализация Firebase app, auth, db
       auth.ts                  — useSession + signInWithGoogle/Anonymously/Out
       queries.ts               — fetchHydration, fetchSessionsPage, persistAction
-
-backend/                       — Supabase
-  supabase/
-    migrations/                — DDL по одному файлу на изменение
-      20260517190000_initial.sql           — profiles/exercises/workouts/workout_exercises + RLS + seed-триггер
-      20260517210000_sessions.sql          — sessions + RLS
-      20260518000000_session_exercises.sql — session_exercises + session_sets + RLS, каскады
 
 docs/                          — продуктовая и техническая дока
 ```
@@ -162,21 +155,21 @@ Profile ─▶ "войти через google" (для anonymous) / "выйти" 
 - **Сводка (Progress.tsx) — заглушка.** Когда появятся графики (вес/тоннаж по упражнению во времени, частота тренировок) — там же
 - **mock-режим:** seed-данные локальны, ничего не пишется в БД. Полезно для UI-разработки без подключения к Supabase
 
-## Mapping action → Supabase
+## Mapping action → Firestore
 
 Reducer-actions пишутся в БД через [persistAction()](../frontend/src/lib/queries.ts) middleware:
 
-| Action | Supabase-операция |
+| Action | Firestore-операция |
 |---|---|
-| `set-current` | `profiles.update({ current_workout_id })` |
-| `add-workout` | `workouts.insert` + sync `workout_exercises` |
-| `update-workout` | `workouts.update` + sync `workout_exercises` (replace по position) |
-| `archive-workout` | `workouts.update({ is_archived: true })` (+ обнуление `current_workout_id` если это был current) |
-| `unarchive-workout` | `workouts.update({ is_archived: false })` |
-| `delete-workout` | `workouts.delete` (RLS-cascade чистит `workout_exercises`) |
-| `add-exercise` | `exercises.insert` |
-| `update-exercise` | `exercises.update` |
-| `add-exercise-to-workout` | `workout_exercises.insert` (с авто-position) |
-| `add-session` | `sessions.insert` + `session_exercises.insert` + `session_sets.insert` (последовательно) |
+| `set-current` | `updateDoc(users/{uid}, { currentWorkoutId })` |
+| `add-workout` | `setDoc(users/{uid}/workouts/{id}, { ...workoutFields, exerciseIds[] })` |
+| `update-workout` | `setDoc(users/{uid}/workouts/{id}, ...)` (полная замена) |
+| `archive-workout` | `updateDoc(workouts/{id}, { isArchived: true })` (+ обнуление `currentWorkoutId` если current) |
+| `unarchive-workout` | `updateDoc(workouts/{id}, { isArchived: false })` |
+| `delete-workout` | `deleteDoc(workouts/{id})` |
+| `add-exercise` | `setDoc(users/{uid}/exercises/{id}, ...)` |
+| `update-exercise` | `updateDoc(exercises/{id}, ...)` |
+| `add-exercise-to-workout` | `updateDoc(workouts/{id}, { exerciseIds: arrayUnion(id) })` |
+| `add-session` | `setDoc(users/{uid}/sessions/{id}, { ...sessionFields, exercises: embedded[] })` |
 
 `hydrate` и `reset` — чисто UI-state, не пишутся.

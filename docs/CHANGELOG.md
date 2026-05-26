@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-05-26
+
+### Миграция с Supabase на Firebase
+- Причина: `supabase.co` заблокирован в РФ без VPN — приложение было недоступно для российских пользователей. Firebase (Google-инфраструктура) в РФ не заблокирован.
+- Удалён `@supabase/supabase-js`, добавлен `firebase`. Удалён `backend/supabase/` с SQL-миграциями.
+- Новые файлы: `lib/firebase.ts` (init), перезаписаны `lib/auth.ts` и `lib/queries.ts`.
+- Auth: `signInWithRedirect` + `GoogleAuthProvider` (надёжнее popup на мобайле) + Anonymous. `useSession()` возвращает `AppSession` с `AppUser` — нет зависимости от Supabase-типов.
+- Firestore-структура: `users/{uid}` (профиль) + subcollections `exercises`, `workouts`, `sessions`. Workouts хранят `exerciseIds[]`, join делается на клиенте при гидратации. Sessions — embedded snapshot упражнений.
+- Сидирование новых пользователей: `fetchHydration` обнаруживает отсутствие `users/{uid}` → `writeBatch` создаёт профиль + 17 упражнений + 4 пробные тренировки.
+- `Dashboard.tsx`, `Home.tsx`: поля `user_metadata.full_name/avatar_url/is_anonymous` → `displayName/photoURL/isAnonymous`.
+- Все остальные компоненты, стор, роутинг — без изменений. tsc + build зелёные.
+
+**TODO юзеру:** заполнить `frontend/.env.local` Firebase-переменными и применить Security Rules в Firebase Console → Firestore → Rules.
+
+---
+
 ## 2026-05-18
 
 ### Активная сессия: префил подходов с предыдущей тренировки

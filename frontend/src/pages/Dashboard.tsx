@@ -2,21 +2,13 @@ import { Button } from '../components/ui/Button';
 import { signInWithGoogle, signOut, useSession } from '../lib/auth';
 import './Dashboard.css';
 
-interface GoogleMeta {
-  full_name?: string;
-  name?: string;
-  avatar_url?: string;
-  picture?: string;
-}
-
 export default function Dashboard() {
   const { session } = useSession();
   const user = session?.user;
-  const isAnonymous = user?.is_anonymous === true;
-  const meta = (user?.user_metadata ?? {}) as GoogleMeta;
+  const isAnonymous = user?.isAnonymous === true;
 
-  const displayName = meta.full_name || meta.name || (isAnonymous ? 'Гость' : 'Пользователь');
-  const avatarUrl = meta.avatar_url || meta.picture;
+  const displayName = user?.displayName || (isAnonymous ? 'Гость' : 'Пользователь');
+  const avatarUrl = user?.photoURL;
   const email = user?.email;
   const initial = displayName.trim().charAt(0).toUpperCase() || '?';
 

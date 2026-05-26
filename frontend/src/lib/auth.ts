@@ -1,23 +1,48 @@
 import { useEffect, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import {
+  onAuthStateChanged,
+  signInWithRedirect,
+  getRedirectResult,
+  signInAnonymously as firebaseSignInAnonymously,
+  signOut as firebaseSignOut,
+  GoogleAuthProvider,
+  type User,
+} from 'firebase/auth';
+import { auth } from './firebase';
 
 const IS_MOCK = import.meta.env.VITE_DEV_AUTH === 'mock';
 
-/** Фейковая сессия для локальной разработки без Supabase. */
-const MOCK_SESSION = {
-  user: { id: 'mock-user', is_anonymous: false },
-} as unknown as Session;
+export interface AppUser {
+  id: string;
+  isAnonymous: boolean;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+}
+
+export interface AppSession {
+  user: AppUser;
+}
+
+function toAppUser(user: User): AppUser {
+  return {
+    id: user.uid,
+    isAnonymous: user.isAnonymous,
+    displayName: user.displayName,
+    email: user.email,
+    photoURL: user.photoURL,
+  };
+}
+
+const MOCK_SESSION: AppSession = {
+  user: { id: 'mock-user', isAnonymous: false, displayName: 'Test User', email: null, photoURL: null },
+};
 
 interface SessionState {
-  session: Session | null;
+  session: AppSession | null;
   loading: boolean;
 }
 
-/**
- * Хук подписки на текущую сессию.
- * В mock-режиме возвращает фейковую сессию сразу (loading=false).
- */
 export function useSession(): SessionState {
   const [state, setState] = useState<SessionState>(() => ({
     session: IS_MOCK ? MOCK_SESSION : null,
@@ -27,15 +52,18 @@ export function useSession(): SessionState {
   useEffect(() => {
     if (IS_MOCK) return;
 
-    supabase.auth.getSession().then(({ data }) => {
-      setState({ session: data.session, loading: false });
+    // Обрабатываем результат редиректа после Google OAuth (вызывается при каждой загрузке страницы)
+    getRedirectResult(auth).catch((err: unknown) => {
+      const code = (err as { code?: string })?.code;
+      if (code !== 'auth/redirect-cancelled-by-user' && code !== 'auth/no-auth-event') {
+        console.error('Redirect sign-in failed', err);
+        alert('Не удалось войти через Google. Попробуй ещё раз.');
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState({ session, loading: false });
+    return onAuthStateChanged(auth, (user) => {
+      setState({ session: user ? { user: toAppUser(user) } : null, loading: false });
     });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   return state;
@@ -43,21 +71,15 @@ export function useSession(): SessionState {
 
 export async function signInWithGoogle(): Promise<void> {
   if (IS_MOCK) return;
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin },
-  });
-  if (error) {
-    console.error('Google sign-in failed', error);
-    alert('Не удалось войти через Google. Попробуй ещё раз.');
-  }
+  await signInWithRedirect(auth, new GoogleAuthProvider());
 }
 
 export async function signInAnonymously(): Promise<void> {
   if (IS_MOCK) return;
-  const { error } = await supabase.auth.signInAnonymously();
-  if (error) {
-    console.error('Anonymous sign-in failed', error);
+  try {
+    await firebaseSignInAnonymously(auth);
+  } catch (err) {
+    console.error('Anonymous sign-in failed', err);
     alert('Не удалось войти как гость. Попробуй ещё раз.');
   }
 }
@@ -67,5 +89,5 @@ export async function signOut(): Promise<void> {
     alert('В mock-режиме выход недоступен. Запусти без VITE_DEV_AUTH=mock.');
     return;
   }
-  await supabase.auth.signOut();
+  await firebaseSignOut(auth);
 }
