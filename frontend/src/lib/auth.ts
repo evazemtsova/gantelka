@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   onAuthStateChanged,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signInAnonymously as firebaseSignInAnonymously,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
@@ -51,16 +50,6 @@ export function useSession(): SessionState {
 
   useEffect(() => {
     if (IS_MOCK) return;
-
-    // Обрабатываем результат редиректа после Google OAuth (вызывается при каждой загрузке страницы)
-    getRedirectResult(auth).catch((err: unknown) => {
-      const code = (err as { code?: string })?.code;
-      if (code !== 'auth/redirect-cancelled-by-user' && code !== 'auth/no-auth-event') {
-        console.error('Redirect sign-in failed', err);
-        alert('Не удалось войти через Google. Попробуй ещё раз.');
-      }
-    });
-
     return onAuthStateChanged(auth, (user) => {
       setState({ session: user ? { user: toAppUser(user) } : null, loading: false });
     });
@@ -71,7 +60,15 @@ export function useSession(): SessionState {
 
 export async function signInWithGoogle(): Promise<void> {
   if (IS_MOCK) return;
-  await signInWithRedirect(auth, new GoogleAuthProvider());
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (err) {
+    const code = (err as { code?: string })?.code;
+    if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+      console.error('Google sign-in failed', err);
+      alert('Не удалось войти через Google. Попробуй ещё раз.');
+    }
+  }
 }
 
 export async function signInAnonymously(): Promise<void> {
